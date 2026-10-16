@@ -1,0 +1,1493 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}html,body{margin:0}body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style></head><body>
+<title>Eurotrip 2027</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: placa de estação. Barra de abas fixa no topo, página de cidade em duas colunas (linha do tempo + mapa). */
+:root{
+  --bg:#EDF0F4; --surface:#FFFFFF; --surface2:#E4E9EF; --ink:#0E1A2B; --muted:#53627A; --line:#CFD7E1;
+  --accent:#0B6E7F; --accent-soft:#D7ECEF; --accent-ink:#FFFFFF;
+  --it:#2E7D50; --ch:#C0321F; --fr:#2A55B8; --gen:#53627A;
+  --warn:#9A5B00; --warn-soft:#FBEBCB; --danger:#B3261E; --danger-soft:#F9DEDB; --ok:#1F7A4D; --ok-soft:#D9F0E3;
+  --shadow:0 1px 2px rgba(14,26,43,.08),0 6px 18px rgba(14,26,43,.06);
+  --font-d:"Barlow Condensed","Arial Narrow",Arial,sans-serif; --font-b:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1420; --surface:#132031; --surface2:#1A2A3F; --ink:#E7EEF6; --muted:#9BAAC0; --line:#27384F;
+  --accent:#4FC3D4; --accent-soft:#12383F; --accent-ink:#06222A;
+  --it:#5CC48A; --ch:#F0705D; --fr:#7FA2F5; --gen:#9BAAC0;
+  --warn:#F2B552; --warn-soft:#3A2B0E; --danger:#F28B82; --danger-soft:#3E1B18; --ok:#6FD3A0; --ok-soft:#12331F;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1420; --surface:#132031; --surface2:#1A2A3F; --ink:#E7EEF6; --muted:#9BAAC0; --line:#27384F;
+  --accent:#4FC3D4; --accent-soft:#12383F; --accent-ink:#06222A;
+  --it:#5CC48A; --ch:#F0705D; --fr:#7FA2F5; --gen:#9BAAC0;
+  --warn:#F2B552; --warn-soft:#3A2B0E; --danger:#F28B82; --danger-soft:#3E1B18; --ok:#6FD3A0; --ok-soft:#12331F;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+h1,h2,h3,h4{font-family:var(--font-d);font-weight:600;line-height:1.1;margin:0;text-wrap:balance;letter-spacing:.01em}
+p{margin:0}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto}
+.num{font-variant-numeric:tabular-nums}
+
+/* barra superior */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);margin:0 calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:10px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--line)}
+.bar-in{max-width:1240px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:8px}
+.brand h1{font-size:30px;font-weight:700}
+.brand .rng{color:var(--muted);font-size:13px}
+.brand .sp{flex:1}
+.cd{background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:3px 12px;font-family:var(--font-d);font-size:16px;font-weight:600;letter-spacing:.02em}
+.ib{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 10px;font-size:13px}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;padding-bottom:0}
+.tabs button{border:0;background:none;padding:8px 14px;font-family:var(--font-d);font-size:19px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap;letter-spacing:.02em}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs.sub{background:var(--surface2);border-radius:8px 8px 0 0;padding:0 8px}
+.tabs.sub button{font-size:16px;padding:7px 12px}
+.tabs .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;background:var(--gen)}
+.dot.IT{background:var(--it)}.dot.CH{background:var(--ch)}.dot.FR{background:var(--fr)}
+
+main{padding-top:20px;display:flex;flex-direction:column;gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);min-width:0}
+.card h3{font-size:22px;margin-bottom:10px}
+.sec-t{font-size:26px;margin:0 0 4px}
+.sub-t{color:var(--muted);margin-bottom:12px}
+.grid{display:grid;gap:16px;min-width:0}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;background:var(--surface2);color:var(--muted);white-space:nowrap}
+.chip.acc{background:var(--accent-soft);color:var(--accent)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.dan{background:var(--danger-soft);color:var(--danger)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:8px;padding:6px 12px;font-weight:600;font-size:13px;text-decoration:none}
+.btn:hover{background:var(--accent-soft)}
+.btn.solid{background:var(--accent);color:var(--accent-ink)}
+.btn.solid:hover{filter:brightness(1.1)}
+.btn.ghost{border-color:var(--line);color:var(--ink)}
+.btn[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+
+/* hero das cidades */
+.hero{border-radius:14px;background:var(--surface);border:1px solid var(--line);overflow:hidden;box-shadow:var(--shadow)}
+.hero .stripe{height:6px;background:var(--cc,var(--gen))}
+.hero-in{padding:18px 20px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px}
+.hero h2{font-size:clamp(40px,7vw,68px);font-weight:700;line-height:.95}
+.hero .ctry{font-family:var(--font-d);font-size:16px;letter-spacing:.12em;text-transform:uppercase;color:var(--cc,var(--muted));font-weight:600;margin-bottom:4px}
+.hero .tag{margin-top:8px;color:var(--muted);max-width:60ch}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;align-content:start}
+.fact{background:var(--surface2);border-radius:8px;padding:8px 10px}
+.fact b{display:block;font-family:var(--font-d);font-size:20px;font-weight:600;line-height:1.1}
+.fact span{font-size:12px;color:var(--muted)}
+
+.daytabs{display:flex;gap:8px;flex-wrap:wrap}
+.daytabs button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 12px;text-align:left;min-width:0}
+.daytabs button b{display:block;font-family:var(--font-d);font-size:18px;font-weight:600;line-height:1.1}
+.daytabs button span{font-size:12px;color:var(--muted)}
+.daytabs button[aria-selected=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.daytabs button[aria-selected=true] span{color:var(--bg);opacity:.75}
+
+.daygrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;align-items:start}
+.sticky{position:sticky;top:calc(env(safe-area-inset-top,0px) + 118px)}
+.dayhead{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px}
+.dayhead h3{font-size:28px}
+
+/* linha do tempo */
+.tl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.it{display:grid;grid-template-columns:62px minmax(0,1fr);gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;position:relative}
+.it:hover{border-color:var(--accent)}
+.it.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.it.done{opacity:.55}
+.it .tm{font-family:var(--font-d);font-size:20px;font-weight:600;line-height:1.05;font-variant-numeric:tabular-nums}
+.it .tm small{display:block;font-size:13px;color:var(--muted);font-weight:500}
+.it h4{font-size:19px;font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.it p{color:var(--muted);font-size:14px;margin-top:2px}
+.it .tipb{margin-top:6px;background:var(--accent-soft);border-radius:8px;padding:6px 10px;font-size:13px;color:var(--ink)}
+.it .tipb.w{background:var(--warn-soft)}
+.it .pins{display:inline-flex;gap:3px}
+.pinb{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:11px;font-weight:700;font-family:var(--font-b)}
+.pinb.food{background:var(--warn);color:var(--surface)}
+.pinb.go{background:var(--ink);color:var(--bg)}
+.pinb.stay{background:var(--cc,var(--gen));color:#fff}
+.it .ck{position:absolute;right:10px;top:10px}
+.it .ck input{width:18px;height:18px;accent-color:var(--accent)}
+.it h4{padding-right:26px}
+.tag-bk{cursor:pointer}
+
+/* mapa */
+.mapbox{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.maptop{display:flex;gap:8px;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid var(--line);align-items:center}
+.maptop .sp{flex:1}
+.mapsvg{display:block;width:100%;height:auto;aspect-ratio:8/6;background:var(--surface2);touch-action:pan-x pan-y;cursor:grab;user-select:none}
+.mapsvg:active{cursor:grabbing}
+.mapfoot{padding:8px 10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.mapstats{display:flex;gap:16px;flex-wrap:wrap;padding:8px 12px;border-top:1px solid var(--line)}
+.mapstats div b{font-family:var(--font-d);font-size:22px;display:block;line-height:1}
+.mapstats div span{font-size:12px;color:var(--muted)}
+.legs{width:100%;border-collapse:collapse;font-size:13px}
+.legs th{font-family:var(--font-d);font-size:14px;text-align:left;color:var(--muted);font-weight:600;padding:4px 8px;border-bottom:1px solid var(--line);letter-spacing:.04em}
+.legs td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.legs td.num{white-space:nowrap}
+.legs tr.on td{background:var(--accent-soft)}
+.scroll-x{overflow-x:auto;max-width:100%}
+
+/* abas internas */
+.inner{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.inner button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 14px;font-weight:600;font-size:14px}
+.inner button[aria-selected=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tip{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.tip:last-child{border-bottom:0}
+.tip .chip{align-self:start}
+
+/* reservas */
+.bk{display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:14px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.bk .date{font-family:var(--font-d);text-align:center;border-radius:10px;padding:6px 4px;background:var(--surface2);align-self:start}
+.bk .date b{display:block;font-size:34px;line-height:1;font-weight:700}
+.bk .date span{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.bk.urgent .date{background:var(--danger-soft);color:var(--danger)}
+.bk.soon .date{background:var(--warn-soft);color:var(--warn)}
+.bk.open .date{background:var(--ok-soft);color:var(--ok)}
+.bk.isdone{opacity:.55}
+.bk h4{font-size:21px;margin-bottom:2px}
+.bk .acts{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.mon{font-family:var(--font-d);font-size:24px;margin:14px 0 8px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.cal{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:14px}
+.calm h4{font-size:20px;margin-bottom:6px}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.cg .h{font-size:11px;color:var(--muted)}
+.cg button{border:0;background:var(--surface2);border-radius:6px;min-height:34px;padding:2px;font-size:12px;position:relative}
+.cg button.e{background:none;pointer-events:none}
+.cg button.trip{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.cg button.ev{background:var(--warn-soft);color:var(--warn);font-weight:700}
+.cg button.ev.pastd{background:var(--ok-soft);color:var(--ok)}
+.cg button.sel{outline:2px solid var(--ink)}
+.cg button i{position:absolute;right:3px;bottom:1px;font-style:normal;font-size:9px}
+.prog{height:10px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.prog>div{height:100%;background:var(--ok);width:0}
+
+/* visão geral */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:8px}
+.sd{border:1px solid var(--line);border-top:5px solid var(--cc);background:var(--surface);border-radius:10px;padding:8px 10px;text-align:left;min-width:0}
+.sd:hover{border-color:var(--accent);border-top-color:var(--cc)}
+.sd b{display:block;font-family:var(--font-d);font-size:22px;line-height:1}
+.sd .wd{font-size:12px;color:var(--muted)}
+.sd .ti{font-size:13px;margin-top:4px;line-height:1.25}
+.big{font-family:var(--font-d);font-size:44px;font-weight:700;line-height:1}
+.stat span{font-size:13px;color:var(--muted)}
+
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{font-family:var(--font-d);font-size:15px;text-align:left;color:var(--muted);padding:6px 10px;border-bottom:2px solid var(--line);letter-spacing:.05em;white-space:nowrap}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.alert{border-left:6px solid var(--warn);background:var(--warn-soft);border-radius:8px;padding:12px 14px}
+.alert.high{border-left-color:var(--danger);background:var(--danger-soft)}
+.alert h4{font-size:20px;margin-bottom:4px}
+.cklist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.cklist label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.cklist input{margin-top:4px;width:16px;height:16px;accent-color:var(--accent)}
+.cklist li.on span{text-decoration:line-through;color:var(--muted)}
+textarea{width:100%;min-height:70px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);padding:8px;font:inherit}
+select{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:5px 8px;font:inherit}
+.idea{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.idea b{font-family:var(--font-d);font-size:18px;font-weight:600}
+.footer{color:var(--muted);font-size:12px;margin-top:8px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:99px;font-size:13px;z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+
+@media (max-width:900px){
+  .daygrid{grid-template-columns:minmax(0,1fr)}
+  .sticky{position:static}
+  .hero-in{grid-template-columns:minmax(0,1fr)}
+  .bk{grid-template-columns:62px minmax(0,1fr)}
+  .bk .acts{grid-column:1 / -1;flex-direction:row;flex-wrap:wrap}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<div class="bar"><div class="bar-in">
+  <div class="brand"><h1>Eurotrip 2027</h1><span class="rng">02 a 12 de abril · Itália, Suíça e França</span><span class="sp"></span><span class="cd" id="cd"></span><button class="ib" id="theme" aria-label="Alternar tema claro e escuro">Tema</button></div>
+  <nav class="tabs" id="groups" role="tablist" aria-label="Seções"></nav>
+  <nav class="tabs sub" id="subs" role="tablist" aria-label="Páginas"></nav>
+</div></div>
+<main class="wrap" id="view"></main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+// Lugares: chave -> [lat, lon, nome, tipo] (tipo: v visita, f comida, g transporte/estação, s hospedagem)
+const P = {
+  // Roma
+  fco:[41.8003,12.2389,'Aeroporto Fiumicino (FCO)','g'],
+  termini:[41.9009,12.5016,'Roma Termini','g'],
+  vaticano:[41.9065,12.4536,'Museus do Vaticano (entrada)','v'],
+  sanpietro:[41.9022,12.4539,'Basílica de São Pedro','v'],
+  prati:[41.9068,12.4620,'Prati (almoço)','f'],
+  castel:[41.9031,12.4663,"Castel Sant'Angelo",'v'],
+  pontesant:[41.9027,12.4677,"Ponte Sant'Angelo",'v'],
+  trevi:[41.9009,12.4833,'Fontana di Trevi','v'],
+  spagna:[41.9059,12.4823,'Escadaria da Espanha','v'],
+  pincio:[41.9115,12.4799,'Pincio / Villa Borghese','v'],
+  borghese:[41.9142,12.4921,'Galleria Borghese','v'],
+  pantheon:[41.8986,12.4769,'Pantheon','v'],
+  santignazio:[41.9004,12.4803,"Sant'Ignazio",'v'],
+  navona:[41.8992,12.4731,'Piazza Navona','v'],
+  altare:[41.8946,12.4831,'Altare della Patria','v'],
+  caracalla:[41.8792,12.4925,'Termas de Caracalla','v'],
+  aventino:[41.8840,12.4790,'Aventino: Giardino degli Aranci','v'],
+  coliseu:[41.8902,12.4922,'Coliseu','v'],
+  foro:[41.8925,12.4853,'Fórum Romano','v'],
+  palatino:[41.8893,12.4875,'Monte Palatino','v'],
+  monti:[41.8955,12.4912,'Monti (restaurantes)','f'],
+  trastevere:[41.8895,12.4700,'Trastevere (jantar especial)','f'],
+  repubblica:[41.9030,12.4965,'Piazza della Repubblica','v'],
+  smaggiore:[41.8977,12.4984,'Santa Maria Maggiore','v'],
+  romahotel:[41.8990,12.4960,'Hotel em Roma (zona sugerida)','s'],
+  flohotel:[43.7745,11.2488,'Hotel em Florença (zona sugerida)','s'],
+  milhotel:[45.4850,9.2040,'Hotel em Milão (zona sugerida)','s'],
+  inthotel:[46.6893,7.8650,'Hotel em Interlaken (zona sugerida)','s'],
+  // Nápoles
+  napcentrale:[40.8531,14.2725,'Napoli Centrale','g'],
+  spaccanapoli:[40.8478,14.2548,'Spaccanapoli','v'],
+  napduomo:[40.8529,14.2599,'Duomo di San Gennaro','v'],
+  sorbillo:[40.8512,14.2559,'Pizza: Sorbillo (Via dei Tribunali)','f'],
+  plebiscito:[40.8358,14.2487,'Piazza del Plebiscito','v'],
+  umberto:[40.8383,14.2494,'Galleria Umberto I','v'],
+  castelnuovo:[40.8386,14.2527,'Castel Nuovo','v'],
+  partenope:[40.8283,14.2480,'Via Partenope (orla)','v'],
+  gambrinus:[40.8368,14.2490,'Caffè Gambrinus','f'],
+  // Florença
+  smn:[43.7765,11.2481,'Firenze Santa Maria Novella','g'],
+  trinita:[43.7676,11.2495,'Ponte Santa Trinita','v'],
+  vecchio:[43.7680,11.2531,'Ponte Vecchio','v'],
+  signoria:[43.7696,11.2558,'Piazza della Signoria','v'],
+  accademia:[43.7769,11.2589,"Galleria dell'Accademia",'v'],
+  fduomo:[43.7731,11.2560,'Duomo de Florença','v'],
+  mcentrale:[43.7766,11.2535,'Mercato Centrale (almoço)','f'],
+  uffizi:[43.7678,11.2553,'Galleria degli Uffizi','v'],
+  michelangelo:[43.7629,11.2650,'Piazzale Michelangelo','v'],
+  oltrarno:[43.7662,11.2467,'Oltrarno / Santo Spirito (jantar)','f'],
+  // Milão
+  mcentral:[45.4862,9.2046,'Milano Centrale','g'],
+  mduomo:[45.4641,9.1919,'Duomo di Milano','v'],
+  galleria:[45.4658,9.1900,'Galleria Vittorio Emanuele II','v'],
+  brera:[45.4720,9.1880,'Brera (almoço)','f'],
+  scala:[45.4674,9.1895,'Teatro alla Scala','v'],
+  sforzesco:[45.4705,9.1795,'Castello Sforzesco','v'],
+  arcopace:[45.4728,9.1724,'Arco della Pace','v'],
+  grazie:[45.4660,9.1710,'Santa Maria delle Grazie (Última Ceia)','v'],
+  navigli:[45.4530,9.1750,'Navigli (aperitivo e jantar)','f'],
+  // Bernina e Suíça
+  tirano:[46.2159,10.1693,'Tirano','g'],
+  brusio:[46.2475,10.1269,'Viaduto circular de Brusio','v'],
+  poschiavo:[46.3247,10.0579,'Poschiavo','v'],
+  alpgrum:[46.3450,10.0250,'Alp Grüm','v'],
+  bernina:[46.4126,10.0189,'Ospizio Bernina / Lago Bianco (2.253 m)','v'],
+  stmoritz:[46.4980,9.8340,'Região de St. Moritz','v'],
+  filisur:[46.6743,9.6747,'Viaduto Landwasser','v'],
+  chur:[46.8532,9.5290,'Chur','g'],
+  zurich:[47.3779,8.5403,'Zürich HB','g'],
+  bern:[46.9489,7.4391,'Bern','g'],
+  intost:[46.6905,7.8689,'Interlaken Ost','g'],
+  intwest:[46.6893,7.8574,'Interlaken West','g'],
+  // Interlaken e arredores
+  lauterbrunnen:[46.5936,7.9086,'Lauterbrunnen','v'],
+  staubbach:[46.5944,7.9060,'Cachoeira Staubbach','v'],
+  kscheidegg:[46.5855,7.9611,'Kleine Scheidegg','v'],
+  eigergl:[46.5774,7.9650,'Eigergletscher','g'],
+  jungfraujoch:[46.5475,7.9853,'Jungfraujoch (3.454 m)','v'],
+  grindelwald:[46.6244,8.0413,'Grindelwald','v'],
+  grutschalp:[46.5810,7.8960,'Grütschalp (teleférico)','g'],
+  murren:[46.5593,7.8925,'Mürren','v'],
+  gimmelwald:[46.5497,7.8928,'Gimmelwald','v'],
+  stechelberg:[46.5448,7.9093,'Stechelberg','g'],
+  // Paris
+  gdl:[48.8443,2.3744,'Paris Gare de Lyon (a confirmar)','g'],
+  parishotel:[48.8530,2.3600,'Hotel em Paris (a definir)','s'],
+  eiffel:[48.8584,2.2945,'Torre Eiffel','v'],
+  trocadero:[48.8616,2.2893,'Trocadéro (foto da Torre)','v'],
+  arco:[48.8738,2.2950,'Arco do Triunfo','v'],
+  louvre:[48.8606,2.3376,'Museu do Louvre','v'],
+  tuileries:[48.8634,2.3275,'Jardim das Tulherias','v'],
+  orsay:[48.8600,2.3266,"Musée d'Orsay",'v'],
+  saintechap:[48.8554,2.3450,'Sainte-Chapelle e Conciergerie','v'],
+  notredame:[48.8530,2.3499,'Notre-Dame / Île de la Cité','v'],
+  latin:[48.8467,2.3470,'Quartier Latin e Panthéon','v'],
+  luxembourg:[48.8462,2.3372,'Jardin du Luxembourg','v'],
+  stgermain:[48.8539,2.3338,'Saint-Germain-des-Prés','v'],
+  marais:[48.8556,2.3658,'Le Marais / Place des Vosges','v'],
+  montmartre:[48.8867,2.3431,'Montmartre e Sacré-Cœur','v'],
+  sena:[48.8638,2.3015,'Cruzeiro no Sena (Pont de l’Alma)','v'],
+  versailles:[48.8049,2.1204,'Palácio de Versalhes','v'],
+  invalides:[48.8553,2.3126,'Les Invalides','v'],
+  rodin:[48.8553,2.3158,'Museu Rodin','v'],
+  garnier:[48.8719,2.3316,'Ópera Garnier','v'],
+  lafayette:[48.8738,2.3320,'Galeries Lafayette (terraço grátis)','v'],
+  lachaise:[48.8614,2.3933,'Cemitério Père-Lachaise','v'],
+  stmartin:[48.8720,2.3660,'Canal Saint-Martin','v'],
+  giverny:[49.0757,1.5339,'Giverny (jardim de Monet)','v'],
+  // cidades (mapa geral)
+  c_roma:[41.9028,12.4964,'Roma','c'],
+  c_nap:[40.8518,14.2681,'Nápoles','c'],
+  c_flo:[43.7696,11.2558,'Florença','c'],
+  c_mil:[45.4642,9.1900,'Milão','c'],
+  c_tir:[46.2159,10.1693,'Tirano','c'],
+  c_chu:[46.8532,9.5290,'Chur','c'],
+  c_int:[46.6863,7.8632,'Interlaken','c'],
+  c_par:[48.8566,2.3522,'Paris','c']
+};
+const COUNTRY = {
+  IT:{nome:'Itália',cor:'var(--it)',moeda:'Euro (€)',idioma:'Italiano',tomada:'Tipos C, F e L (230 V)',fuso:'5 h à frente de Brasília',emerg:'112'},
+  CH:{nome:'Suíça',cor:'var(--ch)',moeda:'Franco suíço (CHF)',idioma:'Alemão (também francês e italiano)',tomada:'Tipo J (pino tipo C encaixa)',fuso:'5 h à frente de Brasília',emerg:'112 (polícia 117, ambulância 144)'},
+  FR:{nome:'França',cor:'var(--fr)',moeda:'Euro (€)',idioma:'Francês',tomada:'Tipos C e E (230 V)',fuso:'5 h à frente de Brasília',emerg:'112'}
+};
+
+const CITIES = {};
+
+CITIES.roma = {
+  id:'roma', nome:'Roma', pais:'IT', grupo:'it', inicio:'2027-04-02', fim:'2027-04-06', noites:4,
+  tagline:'Quatro noites na base de Termini: Vaticano, centro histórico, Roma Antiga e o bate e volta a Nápoles.',
+  facts:[['4 noites','02/04 a 06/04'],['3 estações','Termini é o eixo dos trens'],['10–19 °C','média de abril'],['Sáb 03/04','Vaticano, único dia aberto da semana no seu roteiro']],
+  stay:'roma',
+  days:[
+   {id:'roma-02',date:'2027-04-02',titulo:'Chegada em Roma',tema:'Dia leve para vencer o fuso horário',items:[
+    {t:'11:00',e:'13:00',du:'2h00',titulo:'Pouso em Fiumicino, imigração, bagagens e Leonardo Express',d:'Trem direto de FCO até Roma Termini, cerca de 32 min.',p:['termini'],ty:'g',tip:'O Leonardo Express custa em torno de €14 e sai a cada 15 min. Compre na máquina da estação ou no site da Trenitalia e valide antes de embarcar. Na imigração, o novo sistema de entrada e saída (EES) pode pedir foto e digitais, então reserve tempo extra.'},
+    {t:'13:00',e:'14:30',du:'1h30',titulo:'Check-in no hotel e refeição leve',d:'Deixe as malas, tome um banho e coma algo simples.',p:['romahotel:walk'],ty:'s',tip:'Se o quarto ainda não estiver pronto, peça para guardar as malas. Chegadas por volta de 13h costumam esbarrar no horário de check-in das 14h ou 15h.',w:true},
+    {t:'14:30',e:'18:30',du:'4h00',titulo:'Descanso e passeio livre pelo entorno',d:'Sugestão perto do hotel: Basílica de Santa Maria Maggiore e Piazza della Repubblica, tudo a pé.',p:['smaggiore:walk','repubblica:walk'],ty:'v',tip:'Ficar acordada até as 21h ajuda muito no fuso, que é de 5 h em relação a Brasília. Uma caminhada ao ar livre ajuda a ajustar o relógio.'},
+    {t:'18:30',e:'21:00',du:'2h30',titulo:'Jantar acolhedor e descanso',d:'Bairro Monti, a poucos minutos do hotel, tem boas trattorias.',p:['monti:walk'],ty:'f',tip:'Em Roma o jantar começa por volta das 19h30 ou 20h. Peça carciofi alla romana, que são alcachofras da estação em abril. Confira o "coperto", uma taxa de couvert comum na Itália.'}
+   ]},
+   {id:'roma-03',date:'2027-04-03',titulo:'Vaticano e Castel Sant’Angelo',tema:'Dia com mais ingressos marcados',items:[
+    {t:'08:00',e:'11:00',du:'3h00',titulo:'Museus do Vaticano e Capela Sistina',d:'Galerias, Pinacoteca, Museu Pio-Clementino e fim na Capela Sistina.',p:['vaticano:metro'],ty:'v',bk:'vaticano',tip:'Metrô A até Ottaviano e 10 min a pé. Os museus abrem para o público geral no início da manhã, mas confirme no site se há entrada às 08:00; se não houver, comece às 09:00 e inverta a ordem com São Pedro. Ombros e joelhos cobertos. Na Sistina não se fala alto e não se fotografa.',w:true},
+    {t:'11:15',e:'13:30',du:'2h15',titulo:'Basílica de São Pedro e subida à Cúpula',d:'A entrada na basílica é gratuita. A Cúpula tem cerca de 551 degraus, parte com elevador.',p:['sanpietro:walk'],ty:'v',tip:'O ingresso da Cúpula costuma ser comprado no local, ao lado da entrada da basílica; confirme se há reserva online. Mochilas grandes não entram. A fila de segurança é a principal causa de atraso.'},
+    {t:'13:30',e:'15:30',du:'2h00',titulo:'Almoço no bairro Prati',d:'Bairro residencial ao lado do Vaticano, com preços melhores que a região turística.',p:['prati:walk'],ty:'f',tip:'A Pizzarium Bonci, de pizza al taglio, fica perto do metrô Cipro. Na Via Cola di Rienzo há várias opções de trattoria. Fuja de cardápios com fotos na Via della Conciliazione.'},
+    {t:'16:00',e:'18:15',du:'2h15',titulo:'Castel Sant’Angelo',d:'Mausoléu de Adriano, depois fortaleza e refúgio dos papas. O terraço tem vista ampla do Tibre.',p:['castel:walk'],ty:'v',bk:'castel',tip:'Fecha às segundas, mas sábado funciona. Suba até o terraço no fim da tarde, quando a luz é mais bonita.'},
+    {t:'18:15',e:'21:00',du:'2h45',titulo:'Fotos na Ponte Sant’Angelo e jantar',d:'A ponte dos anjos de Bernini é ótima na hora azul.',p:['pontesant:walk'],ty:'v',tip:'No sábado à noite o centro lota. Reserve o jantar. A região da Via dei Coronari e de Piazza Navona fica a 10 min a pé.'}
+   ]},
+   {id:'roma-04',date:'2027-04-04',titulo:'Trevi, Borghese, Centro Histórico, Caracalla e Aventino',tema:'Domingo de caminhada, e primeiro domingo do mês',items:[
+    {t:'07:00',e:'08:00',du:'1h00',titulo:'Fontana di Trevi e Escadaria da Espanha',d:'Chegar cedo garante a Trevi quase vazia.',p:['trevi:metro','spagna:walk'],ty:'v',tip:'Pela manhã bem cedo a Trevi está vazia e a luz é ótima. Na Escadaria da Espanha é proibido sentar, com multa. Em Roma, as fontinhas "nasoni" têm água potável de graça.'},
+    {t:'08:15',e:'11:30',du:'3h15',titulo:'Pincio, parque e Galleria Borghese',d:'Mirante do Pincio sobre a Piazza del Popolo, passeio pela Villa Borghese e a galeria.',p:['pincio:walk','borghese:walk'],ty:'v',bk:'borghese',tip:'A galeria só entra por horário marcado, com visitas de 2 h. O primeiro horário é às 09:00, então use 08:15 a 09:00 para o Pincio. Bolsas ficam no guarda-volumes. O 1º domingo do mês costuma ter entrada gratuita nos museus estatais, mas a reserva continua obrigatória.',w:true},
+    {t:'11:30',e:'14:00',du:'2h30',titulo:'Pantheon, Sant’Ignazio, Piazza Navona e almoço',d:'O trio clássico do centro histórico, tudo a pé.',p:['pantheon:walk','santignazio:walk','navona:walk'],ty:'v',tip:'O Pantheon tem ingresso pago (cerca de €5, confirme) e aos domingos pode haver missa pela manhã. Prove o gelato da Giolitti. Na Sant’Ignazio, olhe para o teto: a cúpula é pintura em perspectiva.'},
+    {t:'14:00',e:'15:15',du:'1h15',titulo:'Altare della Patria (Piazza Venezia)',d:'Monumento a Vittorio Emanuele II, com vista do terraço.',p:['altare:walk'],ty:'v',tip:'A entrada no monumento é livre. O elevador panorâmico até o terraço é pago, confirme o valor. De lá se vê o Fórum e o Coliseu de cima, um bom preview da terça.'},
+    {t:'15:30',e:'17:15',du:'1h45',titulo:'Termas de Caracalla',d:'Ruínas enormes de banhos romanos, com mosaicos e túneis subterrâneos.',p:['caracalla:bus'],ty:'v',bk:'caracalla',tip:'Cerca de 2,3 km do Altare: ônibus ou 30 min a pé. Fecha às segundas. Verifique o horário de última entrada, que costuma ser antes do pôr do sol.'},
+    {t:'17:15',e:'18:30',du:'1h15',titulo:'Monte Aventino: buraco da fechadura e Jardim das Laranjeiras',d:'Pela fechadura do portão dos Cavaleiros de Malta se vê a cúpula de São Pedro enquadrada.',p:['aventino:walk'],ty:'v',tip:'O pôr do sol em Roma nessa data é por volta das 19h30, então às 18h o jardim ainda não terá a luz do fim do dia. Para pegar o pôr do sol de verdade, inverta: deixe o Aventino para as 18h45 e adie o jantar.',w:true},
+    {t:'19:00',e:'21:30',du:'2h30',titulo:'Jantar especial de encerramento',d:'Sugestão: Trastevere, a 15 min do Aventino, bairro de ruas de pedra e muitos restaurantes.',p:['trastevere:walk'],ty:'f',bk:'jantar-roma',tip:'Reserve com 2 a 4 semanas de antecedência. Pratos romanos para provar: cacio e pepe, carbonara, saltimbocca e supplì como entrada.'}
+   ]},
+   {id:'roma-06',date:'2027-04-06',titulo:'Coliseu e Roma Antiga',tema:'Partida para Florença à tarde',items:[
+    {t:'08:30',e:'10:30',du:'2h00',titulo:'Coliseu (com ingresso reservado)',d:'Metrô B, estação Colosseo, a 2 paradas de Termini.',p:['coliseu:metro'],ty:'v',bk:'coliseu',tip:'O ingresso é nominal e o documento é conferido. Chegue 20 min antes por causa da segurança. Quem quiser arena ou subterrâneo precisa de ingresso específico (Full Experience).'},
+    {t:'10:30',e:'13:00',du:'2h30',titulo:'Fórum Romano e Monte Palatino',d:'O ingresso padrão de 24 h cobre Coliseu, Fórum e Palatino.',p:['foro:walk','palatino:walk'],ty:'v',tip:'Leve água e protetor solar, pois quase não há sombra. O Palatino tem a melhor vista do Fórum e do Circo Máximo.'},
+    {t:'13:00',e:'14:15',du:'1h15',titulo:'Almoço de despedida no bairro Monti',d:'Bairro boêmio logo ao lado do Fórum.',p:['monti:walk'],ty:'f',tip:'La Carbonara e Ai Tre Scalini, na Via Panisperna, são tradicionais. Reserve se for em grupo.'},
+    {t:'14:15',e:'15:00',du:'0h45',titulo:'Retorno ao hotel e recolha das malas',d:'',p:['romahotel:walk'],ty:'s'},
+    {t:'15:00',e:'15:30',du:'0h30',titulo:'Deslocamento até a Estação Termini',d:'',p:['termini:walk'],ty:'g'},
+    {t:'15:30',e:'17:00',du:'1h30',titulo:'Trem de alta velocidade para Florença',d:'Frecciarossa ou Italo, cerca de 1h30. Fora do mapa do dia por ser intercidades.',ty:'g',bk:'trem-rof',tip:'Há uma divergência na sua planilha: aqui o trem chega às 17:00, mas a seção de Florença diz 18:30. Confira qual horário você comprou.',w:true}
+   ]}
+  ],
+  dicas:[
+   ['Reserva','Coliseu, Vaticano, Galleria Borghese e jantares viram os gargalos de abril. Veja a aba Reservas para as datas exatas de abertura.'],
+   ['Transporte','Metrô A (Vaticano, Barberini, Spagna) e B (Coliseu) cobrem quase tudo. Bilhete simples dura 100 min. Valide sempre. Termini é o ponto de partida de todos os trens da viagem.'],
+   ['Segurança','Termini, metrô A e o ônibus 64 têm muitos batedores de carteira. Mochila na frente, nada no bolso de trás. Cuidado com "pulseiras de amizade" e petições com prancheta.'],
+   ['Etiqueta','Igrejas exigem ombros e joelhos cobertos; leve um lenço leve. Sentar nas escadarias e comer nos monumentos pode render multa.'],
+   ['Comida','Evite restaurantes com garçons que chamam você na rua. Em abril é época de alcachofras e fava. Café no balcão custa bem menos que sentado.'],
+   ['Economia','Torneiras e "nasoni" servem água potável. Almoço de prato do dia ("piatto del giorno") sai mais barato que jantar.'],
+   ['Clima','Em abril a máxima fica em torno de 19 °C e a mínima perto de 9 °C, com chuva possível. Leve guarda-chuva compacto e camadas.'],
+   ['Foto','Trevi às 07:00, Pincio de manhã, ponte Sant’Angelo na hora azul e Aventino no pôr do sol.']
+  ],
+  comer:[
+   ['Pizzarium Bonci (Prati)','Pizza al taglio famosa, perto do Vaticano.'],
+   ['Giolitti','Gelateria clássica perto do Pantheon.'],
+   ['Roscioli','Salumeria e restaurante com carbonara, perto do Campo de’ Fiori. Reserve.'],
+   ['La Carbonara e Ai Tre Scalini (Monti)','Trattorias tradicionais na Via Panisperna.'],
+   ['Trastevere','Bairro para o jantar especial: Da Enzo al 29 e Tonnarello são conhecidos; reserve.']
+  ]
+};
+
+CITIES.napoles = {
+  id:'napoles', nome:'Nápoles', pais:'IT', grupo:'it', inicio:'2027-04-05', fim:'2027-04-05', noites:0,
+  tagline:'Bate e volta de trem de alta velocidade: pizza, ruas históricas, praças e orla em um dia.',
+  facts:[['1 dia','Segunda 05/04'],['~1h10','Frecciarossa Roma–Nápoles'],['~225 km','distância por trilhos'],['Seg','Atenção a fechamentos de segunda']],
+  stay:null,
+  days:[
+   {id:'nap-05',date:'2027-04-05',titulo:'Bate e volta a Nápoles',tema:'Pizza, Spaccanapoli e orla',items:[
+    {t:'08:00',e:'09:15',du:'1h15',titulo:'Trem de alta velocidade Roma → Nápoles',d:'Frecciarossa ou Italo. Chega em Napoli Centrale.',p:['napcentrale'],ty:'g',bk:'trem-nap',tip:'Compre cedo para pegar tarifas "Super Economy". Chegue a Termini 15 min antes da partida.'},
+    {t:'09:30',e:'12:30',du:'3h00',titulo:'Spaccanapoli e Duomo di San Gennaro',d:'A rua reta que "corta" o centro antigo e a catedral do padroeiro da cidade.',p:['spaccanapoli:metro','napduomo:walk'],ty:'v',tip:'Do Centrale ao centro antigo: metrô linha 1 até Dante ou Cavour (cerca de 15 min), ou táxi. A Cappella Sansevero, com o Cristo Velado, funciona às segundas, mas exige ingresso comprado antes e costuma esgotar. É uma ótima adição se couber.'},
+    {t:'12:30',e:'14:00',du:'1h30',titulo:'Almoço com pizza napolitana (Da Michele ou Sorbillo)',d:'Pizza margherita, a original. Sorbillo fica na Via dei Tribunali.',p:['sorbillo:walk'],ty:'f',tip:'Da Michele só serve margherita e marinara e é a uns 1,1 km de Sorbillo. As duas têm fila: chegue antes das 12h30 ou depois das 14h. Pegue senha.'},
+    {t:'14:00',e:'16:30',du:'2h30',titulo:'Piazza del Plebiscito, Galleria Umberto I e Castel Nuovo',d:'A parte mais "palaciana" de Nápoles.',p:['plebiscito:metro','umberto:walk','castelnuovo:walk'],ty:'v',tip:'Do centro antigo a Plebiscito são cerca de 2,6 km: metrô linha 1 até Municipio ou 35 min a pé. Castel Nuovo pode ter horário reduzido, confirme.'},
+    {t:'16:30',e:'18:00',du:'1h30',titulo:'Orla marítima (Via Partenope) e café no Caffè Gambrinus',d:'Passeio em frente ao Castel dell’Ovo e café histórico.',p:['partenope:walk','gambrinus:walk'],ty:'f',tip:'No Gambrinus, tomar o café no balcão custa menos do que na mesa. Prove uma sfogliatella ou o babà.'},
+    {t:'18:30',e:'19:45',du:'1h15',titulo:'Trem de volta a Roma Termini',d:'',p:['napcentrale:metro'],ty:'g',tip:'Do centro à estação pelo metrô linha 1 leva cerca de 20 min. Margem de segurança: o trem não espera. A Pasticceria Attanasio, perto da estação, é boa para levar sfogliatelle quentes.'}
+   ]}
+  ],
+  dicas:[
+   ['Segurança','Nápoles pede mais atenção a carteiras e celulares, especialmente em ônibus, metrô e vielas. Não use o celular na mão perto de scooters.'],
+   ['Transporte','Metrô linha 1 e funicolari cobrem o essencial. Táxis têm tarifa fixa para alguns trajetos (peça para ver).'],
+   ['Comida','Pizza napolitana é patrimônio da UNESCO. Peça margherita e coma na hora. Café no balcão, com água.'],
+   ['Reserva','Compre os trens Roma–Nápoles–Roma com antecedência: as tarifas baratas somem. Escolha trens com folga de 20 min na volta.'],
+   ['Clima','Mais quente que Roma, perto de 18 °C de máxima. Leve casaco leve para a orla.'],
+   ['Etiqueta','Cumprimente com "buongiorno". Napolitanos adoram conversar e ajudam, mas combine preço do táxi antes.']
+  ],
+  comer:[
+   ['Sorbillo e Da Michele','Pizza clássica. Pizzeria di Matteo é uma opção na Via dei Tribunali.'],
+   ['Caffè Gambrinus','Café histórico perto de Plebiscito.'],
+   ['Pasticceria Attanasio','Sfogliatelle quentes perto da estação.']
+  ]
+};
+
+CITIES.florenca = {
+  id:'florenca', nome:'Florença', pais:'IT', grupo:'it', inicio:'2027-04-06', fim:'2027-04-07', noites:1,
+  tagline:'Uma noite, um dia cheio: David, Duomo, Uffizi, Ponte Vecchio e o pôr do sol no Piazzale Michelangelo.',
+  facts:[['1 noite','06/04 a 07/04'],['3 reservas','Accademia, Duomo e Uffizi'],['Centro compacto','tudo a pé'],['Qua 07/04','Museus abertos, nada fecha']],
+  stay:'florenca',
+  days:[
+   {id:'flo-06',date:'2027-04-06',titulo:'Chegada e noite no Arno',tema:'Ponte Santa Trinita, Signoria e jantar toscano',items:[
+    {t:'18:30',e:'19:15',du:'0h45',titulo:'Chegada a Santa Maria Novella e check-in',d:'O hotel sugerido fica a poucos minutos da estação.',p:['smn','flohotel:walk'],ty:'s',tip:'Divergência na planilha: o trem de Roma chega às 17:00 na seção de Roma e às 18:30 aqui. Se for 17:00, você ganha 1h30 de tarde livre.',w:true},
+    {t:'19:15',e:'20:30',du:'1h15',titulo:'Ponte Santa Trinita, Piazza della Signoria e gelato',d:'Vista da Ponte Vecchio ao pôr do sol, depois a praça com o Palazzo Vecchio.',p:['trinita:walk','signoria:walk'],ty:'v',tip:'O pôr do sol em Florença nessa data é por volta das 19h50, então o horário está certo. Gelato artesanal: Gelateria dei Neri e Vivoli são tradicionais.'},
+    {t:'20:30',e:'22:00',du:'1h30',titulo:'Jantar toscano em Oltrarno',d:'Massa caseira e Chianti no outro lado do rio.',p:['oltrarno:walk'],ty:'f',tip:'Reserve. Bistecca alla fiorentina é cobrada por peso e é grande; divida. Ribollita e pappa al pomodoro são ótimas e baratas.'}
+   ]},
+   {id:'flo-07',date:'2027-04-07',titulo:'Florença completa',tema:'Partida para Milão à noite',items:[
+    {t:'08:15',e:'09:45',du:'1h30',titulo:'Galleria dell’Accademia (David)',d:'Michelangelo em primeira mão, e a Galeria dos Prisioneiros.',p:['accademia:walk'],ty:'v',bk:'accademia',tip:'Abre às 08:15, e o primeiro horário é o mais vazio. Fecha às segundas, mas quarta está aberto. Entre pela fila de reservados.'},
+    {t:'10:00',e:'12:00',du:'2h00',titulo:'Complexo do Duomo',d:'Catedral, Batistério, Campanário de Giotto e Cúpula de Brunelleschi.',p:['fduomo:walk'],ty:'v',bk:'duomoflo',tip:'A subida à Cúpula (cerca de 463 degraus) exige horário marcado dentro do Brunelleschi Pass. Sem reserva, perde-se a subida. Mochilas grandes não entram, deixe no hotel.'},
+    {t:'12:00',e:'13:30',du:'1h30',titulo:'Almoço no Mercato Centrale',d:'Praça de alimentação em dois andares, com massas frescas, embutidos e porchetta.',p:['mcentrale:walk'],ty:'f',tip:'Antes das 12h30 tem lugar para sentar. Para um panino famoso, All’Antico Vinaio é conhecido pela fila.'},
+    {t:'13:45',e:'15:45',du:'2h00',titulo:'Galleria degli Uffizi',d:'Botticelli, Da Vinci, Michelangelo e Caravaggio.',p:['uffizi:walk'],ty:'v',bk:'uffizi',tip:'Chegue 15 min antes. 2 h dão para os destaques; 3 h se quiser ver com calma. Guarde as sacolas no guarda-volumes.'},
+    {t:'16:00',e:'17:15',du:'1h15',titulo:'Ponte Vecchio e ruas do centro histórico',d:'Joalherias do século XVI sobre o Arno.',p:['vecchio:walk'],ty:'v',tip:'De manhã cedo ou à noite a ponte fica mais vazia. Dê uma volta para ver a Ponte pelo lado oposto no Lungarno.'},
+    {t:'17:30',e:'18:45',du:'1h15',titulo:'Piazzale Michelangelo',d:'A vista clássica de Florença, com o Duomo e o Arno.',p:['michelangelo:bus'],ty:'v',tip:'Ônibus 12 ou 13 ou 25 min a pé morro acima. O pôr do sol é só por volta das 19h50, e seu trem é às 20:00. Se quiser o pôr do sol de verdade, pegue um trem mais tarde.',w:true},
+    {t:'19:00',e:'19:30',du:'0h30',titulo:'Retorno ao hotel, malas e Estação Santa Maria Novella',d:'',p:['flohotel:bus','smn:walk'],ty:'g'},
+    {t:'20:00',e:'22:00',du:'2h00',titulo:'Trem de alta velocidade para Milão',d:'Chegada em Milano Centrale. Fora do mapa por ser intercidades.',ty:'g',bk:'trem-flo-mil',tip:'Milano Centrale à noite tem muitas pessoas pedindo ajuda com máquinas de bilhete. Use só as máquinas oficiais ou os guichês.'}
+   ]}
+  ],
+  dicas:[
+   ['Reserva','Accademia, Duomo (cúpula) e Uffizi têm horário marcado. Reserve as três com pelo menos 4 a 6 semanas, e sincronize os horários com o seu roteiro.'],
+   ['Transporte','O centro é pequeno e a pé. Táxi do centro à estação sai uns €10 a €12. Ônibus 12 ou 13 sobe ao Piazzale.'],
+   ['Segurança','Atenção a carteiristas em Santa Maria Novella, Mercato Centrale e Ponte Vecchio.'],
+   ['Etiqueta','Não é permitido comer ou sentar em portais de igreja e monumentos. Florença tem zonas restritas a carros (ZTL).'],
+   ['Comida','Peça ribollita, pappa al pomodoro, lampredotto (pão com tripa) e bistecca. O Chianti vai bem em jarra.'],
+   ['Economia','Muitos lugares cobram "coperto". Café no balcão. Água do chafariz e fontes gratuitas.'],
+   ['Clima','Média de 7 a 18 °C em abril, com céu mudando rápido. Use calçado confortável para pedras.'],
+   ['Foto','Ponte Santa Trinita ao pôr do sol, Piazzale pela manhã ou no fim da tarde, Duomo da Cúpula.']
+  ],
+  comer:[
+   ['Mercato Centrale','Lugar da sua refeição, com vários balcões.'],
+   ['Gelateria dei Neri e Vivoli','Gelato artesanal no centro.'],
+   ['Trattoria Mario','Almoço rápido perto do Mercato Centrale (só almoço, confirme).'],
+   ['Oltrarno / Santo Spirito','Praça com várias trattorias para o jantar.']
+  ]
+};
+
+CITIES.milao = {
+  id:'milao', nome:'Milão', pais:'IT', grupo:'it', inicio:'2027-04-07', fim:'2027-04-09', noites:2,
+  tagline:'Um dia intenso: Duomo, Galleria, Brera, Castello, Última Ceia de Da Vinci e aperitivo nos Navigli.',
+  facts:[['2 noites','07/04 a 09/04'],['Qui 08/04','O dia todo em Milão'],['Cenacolo','O ingresso mais difícil da viagem'],['07:20','Saída cedo na sexta']],
+  stay:'milao',
+  days:[
+   {id:'mil-08',date:'2027-04-08',titulo:'Milão completa',tema:'O dia mais intenso e focado',items:[
+    {t:'08:30',e:'10:30',du:'2h00',titulo:'Duomo di Milano e Terraços',d:'Interior da catedral e subida aos terraços para ver as agulhas de perto.',p:['mduomo:metro'],ty:'v',bk:'duomomi',tip:'Do Centrale ao Duomo: metrô M3 (linha amarela), cerca de 12 min. Compre o ingresso com acesso ao terraço (elevador ou escada). Ombros e joelhos cobertos.'},
+    {t:'10:30',e:'11:30',du:'1h00',titulo:'Galleria Vittorio Emanuele II',d:'A galeria de vidro e ferro com a tradição do touro no mosaico.',p:['galleria:walk'],ty:'v',tip:'Gire o calcanhar sobre o touro no chão para dar sorte. O Camparino in Galleria serve aperitivo histórico.'},
+    {t:'11:30',e:'13:00',du:'1h30',titulo:'Bairro Brera e almoço',d:'Ruelas de pedra, ateliês e trattorias.',p:['brera:walk'],ty:'f',tip:'Peça Risotto alla Milanese, com açafrão. Ossobuco e cotoletta alla milanese também são clássicos.'},
+    {t:'13:00',e:'14:00',du:'1h00',titulo:'Teatro alla Scala',d:'Fachada e praça. O museu do teatro funciona mediante ingresso.',p:['scala:walk'],ty:'v',tip:'Se a ideia é só a fachada, 15 min bastam. A estátua de Leonardo na Piazza della Scala também é rápida.'},
+    {t:'14:00',e:'15:30',du:'1h30',titulo:'Castello Sforzesco e Parco Sempione',d:'Pátios do castelo e caminhada até o Arco della Pace.',p:['sforzesco:walk','arcopace:walk'],ty:'v',tip:'Os pátios são gratuitos. Os museus do castelo (Pietà Rondanini, de Michelangelo) fecham às segundas, mas quinta está aberta.'},
+    {t:'15:30',e:'17:30',du:'2h00',titulo:'Santa Maria delle Grazie e a Última Ceia',d:'O Cenacolo Vinciano, com Da Vinci. A visita à pintura dura cerca de 15 min.',p:['grazie:walk'],ty:'v',bk:'cenacolo',tip:'Seu horário é fixado pelo ingresso, de 15 em 15 min. Organize o resto do dia em torno dele. Chegue 20 min antes. O local fecha às segundas.',w:true},
+    {t:'18:00',e:'21:00',du:'3h00',titulo:'Bairro Navigli: aperitivo e jantar',d:'Canais com bares e restaurantes. O aperitivo é a grande tradição.',p:['navigli:metro'],ty:'f',tip:'Aperitivo: um drink com buffet incluso, das 18h às 21h. Metrô M2 até Porta Genova ou bonde 2 e 14. À noite, cuidado com carteiristas.'}
+   ]}
+  ],
+  dicas:[
+   ['Reserva','Cenacolo Vinciano esgota em minutos, por lotes. Duomo (terraços) também deve ser reservado. Veja a aba Reservas.'],
+   ['Transporte','Metrô M1 (vermelha), M2 (verde), M3 (amarela). Bilhete urbano de cerca de €2,20 vale 90 min. Centrale está na M2 e M3.'],
+   ['Segurança','Milano Centrale e o metrô têm carteiristas. Cuidado com "ajuda" nas máquinas de bilhete.'],
+   ['Etiqueta','Milão é a cidade mais formal da Itália. Evite roupas de praia nas igrejas e restaurantes.'],
+   ['Comida','Risotto alla milanese, ossobuco, panzerotti da Luini, panettone mesmo fora do Natal, e aperitivo.'],
+   ['Economia','Em vez de jantar, o aperitivo com buffet pode substituir a refeição por um preço menor.'],
+   ['Clima','Máxima em torno de 17 °C, com possibilidade de névoa e chuva. Camadas e guarda-chuva.'],
+   ['Foto','Terraços do Duomo ao meio da manhã, Galleria sem gente logo cedo, Navigli no entardecer.']
+  ],
+  comer:[
+   ['Luini','Panzerotti fritos perto do Duomo.'],
+   ['Camparino in Galleria','Aperitivo histórico na Galleria.'],
+   ['Marchesi 1824','Pâtisserie dentro da Galleria.'],
+   ['Trattoria Milanese','Cozinha local clássica.']
+  ]
+};
+CITIES.bernina = {
+  id:'bernina', nome:'Bernina Express', pais:'CH', grupo:'ch', inicio:'2027-04-09', fim:'2027-04-09', noites:0,
+  tagline:'Dia de trem: Milão, Tirano, os Alpes pelo Bernina e a Suíça até Interlaken.',
+  facts:[['~14 h','do trem de Milão ao hotel'],['144 km','Tirano a Chur, trecho UNESCO'],['2.253 m','ponto mais alto, Ospizio Bernina'],['Atenção','Confirme o horário do Bernina Express']],
+  stay:null,
+  days:[
+   {id:'ber-09',date:'2027-04-09',titulo:'O dia do Bernina Express rumo à Suíça',tema:'Milão → Tirano → Chur → Interlaken',alerta:'O Bernina Express panorâmico parte de Tirano às 11:00 na sua planilha. Em horários de 2026, o serviço saía de Tirano às 08:06 (só no verão) e às 14:24 (o ano todo). Em abril, é provável que só reste o da tarde. Veja o aviso completo na aba Pontos de atenção e confirme no site da RhB quando os horários de 2027 saírem.',items:[
+    {t:'07:20',e:'09:55',du:'2h35',titulo:'Trem regional Milão → Tirano',d:'Trenord direto, margeando o Lago de Como e o Vale da Valtellina. Sem reserva.',p:['mcentral','tirano:train'],ty:'g',bk:'trem-mil-tir',tip:'Compre na estação ou no app da Trenord, cerca de €12,50. Tirano fica a uma curta caminhada pela praça entre a estação italiana e a suíça (RhB). Leve lanche para a viagem.'},
+    {t:'10:00',e:'11:00',du:'1h00',titulo:'Chegada em Tirano, café e preparação',d:'Pausa antes do trem panorâmico.',p:['tirano'],ty:'f',tip:'Tirano tem o Santuário della Madonna di Tirano, perto da estação. Se o Bernina sair só às 14:24, há tempo para almoço e passeio curto.',w:true},
+    {t:'11:00',e:'15:10',du:'4h10',titulo:'Bernina Express: Tirano → Chur',d:'Trecho Patrimônio da UNESCO com viadutos, geleiras, passagem do Bernina e o Viaduto Landwasser.',p:['brusio:train','poschiavo:train','alpgrum:train','bernina:train','stmoritz:train','filisur:train','chur:train'],ty:'v',bk:'bernina-seat',tip:'A reserva de assento é obrigatória nos vagões panorâmicos: cerca de CHF 32 fora do verão e CHF 36 de 2 de maio a 25 de outubro (valores de 2026). Escolha um assento junto à janela. Em abril pode haver muita neve, o que é lindo.',w:true},
+    {t:'15:15',e:'16:00',du:'0h45',titulo:'Chegada em Chur',d:'A cidade mais antiga da Suíça.',p:['chur'],ty:'v',tip:'Se o horário real do Bernina empurrar a chegada para as 18:31, esse trecho some e o dia vira só trem.',w:true},
+    {t:'16:15',e:'19:40',du:'3h25',titulo:'Conexão suíça Chur → Interlaken (via Zurique)',d:'Trens suíços sincronizados, com baldeações rápidas.',p:['zurich:train','bern:train','intost:train'],ty:'g',bk:'trem-ch',tip:'O app SBB Mobile mostra as plataformas e conexões. As baldeações suíças costumam ter 5 a 10 min e funcionam. Se tiver o Swiss Travel Pass, o trecho está coberto.'},
+    {t:'19:40',e:'20:30',du:'0h50',titulo:'Chegada em Interlaken, check-in e descanso',d:'Hotel próximo da estação Interlaken Ost ou da Höheweg.',p:['inthotel:walk'],ty:'s',tip:'Peça o código de entrada se a recepção fechar cedo. Supermercados Coop e Migros fecham por volta das 19h a 20h; compre lanche antes.'}
+   ]}
+  ],
+  dicas:[
+   ['Reserva','Reserve o assento do Bernina assim que o horário de 2027 sair no site da RhB. As reservas abrem até 6 meses antes.'],
+   ['Transporte','Compare Swiss Travel Pass (4 dias consecutivos), Half Fare Card e bilhetes avulsos. O Half Fare reduz o Jungfraujoch a cerca de CHF 130 e vale em quase toda a rede.'],
+   ['Foto','Janelas panorâmicas abrem em alguns vagões. Fotografar Landwasser e Brusio exige estar pronto: confira a posição pelo mapa.'],
+   ['Clima','Em abril há neve nas partes altas. No Ospizio Bernina, 2.253 m, a temperatura pode ficar negativa. Leve casaco no trem.'],
+   ['Comida','No vagão panorâmico não há restaurante garantido. Leve lanche, água e algo quente.'],
+   ['Economia','Tickets avulsos Tirano–Chur ou Tirano–Zurique abrem 6 meses antes e têm tarifas baratas limitadas.'],
+   ['Segurança','Bagagem fica no vagão. Mantenha documentos e carteira consigo. A baldeação em Zurique é movimentada.']
+  ],
+  comer:[
+   ['Tirano','Pizzoccheri e sciatt, pratos típicos da Valtellina.'],
+   ['Chur','Capuns, rolinhos de massa com folhas de acelga, típicos dos Grisões.']
+  ]
+};
+
+CITIES.interlaken = {
+  id:'interlaken', nome:'Interlaken', pais:'CH', grupo:'ch', inicio:'2027-04-09', fim:'2027-04-12', noites:3,
+  tagline:'Três noites entre dois lagos: Jungfraujoch, Grindelwald, o Vale de Lauterbrunnen e Mürren.',
+  facts:[['3 noites','09/04 a 12/04'],['3.454 m','Jungfraujoch, Top of Europe'],['72','cachoeiras em Lauterbrunnen'],['CHF','tudo caro, planeje o orçamento']],
+  stay:'interlaken',
+  days:[
+   {id:'int-10',date:'2027-04-10',titulo:'Jungfraujoch e Grindelwald',tema:'Top of Europe com laço de ida e volta',items:[
+    {t:'08:30',e:'11:30',du:'3h00',titulo:'Subida de trem de montanha até o Jungfraujoch',d:'Interlaken Ost → Lauterbrunnen → Kleine Scheidegg → Eigergletscher → Jungfraujoch.',p:['intost','lauterbrunnen:train','kscheidegg:train','eigergl:train','jungfraujoch:train'],ty:'v',bk:'jungfrau',tip:'Os primeiros trens saem por volta das 07:35. O "Good Morning Ticket" (saída antes das 08:00 e volta até 13:00) é mais barato, mas encurta sua estadia no topo. Nuvens costumam fechar a partir do meio-dia. Confira as webcams do Jungfraujoch na véspera.',w:true},
+    {t:'11:30',e:'13:30',du:'2h00',titulo:'Vivência no topo e almoço',d:'Sphinx Observatory, Palácio de Gelo, mirante da Geleira de Aletsch e neve eterna.',p:['jungfraujoch'],ty:'v',tip:'No topo a temperatura fica abaixo de zero, e a altitude é de 3.454 m. Devagar, beba água e evite álcool. Óculos escuros e protetor solar são obrigatórios. O último trem de volta sai por volta das 16:30 a 17:00.'},
+    {t:'13:30',e:'15:30',du:'2h00',titulo:'Descida com parada em Grindelwald',d:'Trem até Eigergletscher e o teleférico Eiger Express até Grindelwald Terminal.',p:['eigergl:train','grindelwald:cable'],ty:'v',tip:'Grindelwald Terminal fica a uns 2 km do centro da vila: há trem e ônibus. Esse laço, subindo por Lauterbrunnen e descendo por Grindelwald, é o mais clássico.'},
+    {t:'15:30',e:'18:30',du:'3h00',titulo:'Exploração de Grindelwald',d:'Passeio na vila sob a face norte do Eiger, café e chocolate quente.',p:['grindelwald'],ty:'v',tip:'Em abril, algumas atrações de verão, como as da região do First, podem estar fechadas. Confirme antes.'},
+    {t:'18:30',e:'19:30',du:'1h00',titulo:'Retorno a Interlaken, fondue e pernoite',d:'Trem direto Grindelwald → Interlaken Ost, cerca de 35 min.',p:['intost:train'],ty:'f',tip:'Reserve o fondue com antecedência no sábado. Faça uma pausa no hotel antes do jantar.'}
+   ]},
+   {id:'int-11',date:'2027-04-11',titulo:'Vale de Lauterbrunnen e Mürren',tema:'Cachoeiras e vila sem carros',items:[
+    {t:'09:00',e:'09:30',du:'0h30',titulo:'Trem Interlaken → Lauterbrunnen',d:'Cerca de 20 min.',p:['intost','lauterbrunnen:train'],ty:'g',tip:'Saídas de meia em meia hora. Do Interlaken Ost.'},
+    {t:'09:30',e:'12:00',du:'2h30',titulo:'Caminhada pelo vale e cachoeira Staubbach',d:'Paredões verticais de rocha e a queda de 270 m da Staubbach.',p:['staubbach:walk'],ty:'v',tip:'Em abril a cachoeira costuma estar cheia pelo degelo. A Trümmelbach (cachoeiras dentro da montanha) costuma abrir no início de abril: confirme.'},
+    {t:'12:00',e:'13:30',du:'1h30',titulo:'Teleférico e trem até Mürren, e almoço',d:'Teleférico até Grütschalp e o trem panorâmico até a vila.',p:['grutschalp:cable','murren:train'],ty:'f',tip:'Vila alpina sem carros, com vista do Eiger, Mönch e Jungfrau. Passe o dia no Mürren ou suba até o Schilthorn se o tempo estiver limpo (opcional).'},
+    {t:'13:30',e:'16:30',du:'3h00',titulo:'Passeio por Mürren',d:'Chalés, mirantes e contemplação dos Alpes.',p:['murren'],ty:'v',tip:'Em abril ainda há neve nas trilhas. Calçado impermeável ajuda.'},
+    {t:'16:30',e:'18:30',du:'2h00',titulo:'Descida por Gimmelwald e Stechelberg, volta a Interlaken',d:'Caminhada fácil até Gimmelwald, teleférico até Stechelberg, ônibus e trem.',p:['gimmelwald:walk','stechelberg:cable','lauterbrunnen:bus','intost:train'],ty:'v',tip:'A caminhada Mürren–Gimmelwald leva cerca de 30 min. Confira o horário do último teleférico. Depois, jantar de despedida da Suíça.',w:true}
+   ]},
+   {id:'int-12',date:'2027-04-12',titulo:'Partida de Interlaken rumo a Paris',tema:'Berna, TGV Lyria e Paris',items:[
+    {t:'08:00',e:'10:30',du:'2h30',titulo:'Trem Interlaken → Berna ou Zurique',d:'Conexão pela rede ferroviária suíça.',p:['intost','bern:train'],ty:'g',tip:'Interlaken–Berna leva cerca de 55 min, então a sua planilha (2h30) parece folgada. Confirme no SBB se dá para sair mais tarde, e deixe margem para a conexão.',w:true},
+    {t:'10:30',e:'13:40',du:'3h10',titulo:'TGV Lyria rumo a Paris',d:'Trem de alta velocidade. Pode chegar na Gare de Lyon ou na Gare de l’Est, conforme a rota.',p:['gdl:train'],ty:'g',bk:'trem-par',tip:'A TGV Lyria exige reserva de assento. Confira de qual estação sai e em qual chega: Bern, Basel ou Zürich têm rotas diferentes.'},
+    {t:'13:40',e:'15:00',du:'1h20',titulo:'Desembarque em Paris, hotel e almoço leve',d:'',p:['gdl','parishotel:metro'],ty:'s',tip:'Compre o bilhete do metrô (Navigo Easy) na estação. Se o hotel for no Marais ou no Quartier Latin, o metrô leva cerca de 15 a 20 min.'}
+   ]}
+  ],
+  dicas:[
+   ['Reserva','Jungfraujoch: o bilhete pode ser comprado 1 a 3 dias antes, olhando a previsão e as webcams. Se o tempo estiver ruim, troque com o domingo (Lauterbrunnen).'],
+   ['Transporte','Swiss Travel Pass dá 25% de desconto no Jungfraujoch. Half Fare Card reduz bem mais. Faça a conta no site do SBB antes de comprar.'],
+   ['Clima','Interlaken fica entre 3 e 13 °C em abril. No Jungfraujoch o frio vai de −10 a −3 °C. Leve luvas, gorro e óculos de sol.'],
+   ['Saúde','Altitude de 3.454 m: suba devagar, beba água e evite álcool e esforço. Quem tem problema cardíaco ou respiratório deve consultar médico.'],
+   ['Comida','Suíça é cara. Coop e Migros vendem sanduíches e saladas boas. Água de torneira e das fontes é potável.'],
+   ['Economia','Muitos hotéis incluem o Interlaken Visitor Card com ônibus locais gratuitos (confirme). Mercados e piqueniques reduzem muito o gasto.'],
+   ['Plano B','Com chuva forte, vá a Berna (centro histórico UNESCO, 55 min de trem) ou faça a cachoeira Trümmelbach, parte dentro da montanha.'],
+   ['Etiqueta','Fale "Grüezi" ao entrar em lojas. Sossego a partir das 22h e aos domingos. Em abril trilhas ainda podem ter neve.']
+  ],
+  comer:[
+   ['Café Schuh','Café e chocolate na Höheweg.'],
+   ['Fondue','Pratos tradicionais em restaurantes na Höheweg e na Marktgasse. Reserve.'],
+   ['Coop e Migros','Piqueniques e lanches para os dias de trem.']
+  ]
+};
+
+CITIES.paris = {
+  id:'paris', nome:'Paris', pais:'FR', grupo:'fr', inicio:'2027-04-12', fim:null, noites:null,
+  tagline:'Chegada na segunda, 12/04. Os demais dias ficam em aberto: monte cada um com o construtor de dias.',
+  facts:[['Seg 12/04','chegada de trem'],['Em aberto','número de dias a definir'],['Seg','Orsay e Versalhes fecham às segundas'],['Ter','Louvre fecha às terças']],
+  stay:'paris',
+  days:[
+   {id:'par-12',date:'2027-04-12',titulo:'Chegada em Paris',tema:'Primeira tarde na Cidade Luz',items:[
+    {t:'13:40',e:'15:00',du:'1h20',titulo:'Desembarque, metrô até o hotel, check-in e almoço leve',d:'Se o quarto não estiver pronto, deixe as malas.',p:['gdl','parishotel:metro'],ty:'s',tip:'Se chegar na Gare de Lyon, o metrô linhas 1 e 14 ajudam. O Navigo Découverte semanal vale de segunda a domingo: começar na segunda, 12/04, é o dia ideal para ele.'},
+    {t:'15:00',e:'19:00',du:'4h00',titulo:'Primeiro passeio pela Cidade Luz',d:'Sugestão: Île de la Cité, pátio do Louvre, Tulherias e Trocadéro com a Torre Eiffel ao anoitecer.',p:['notredame:metro','louvre:walk','tuileries:walk','trocadero:metro'],ty:'v',tip:'Em Paris o pôr do sol é por volta das 20h40 em meados de abril. A Torre pisca por 5 min no início de cada hora à noite. O Louvre fecha às terças, mas hoje (segunda) está aberto; o Orsay fecha às segundas.',w:true}
+   ]}
+  ],
+  dicas:[
+   ['Reserva','Louvre exige horário marcado. Torre Eiffel, Sainte-Chapelle e Versalhes esgotam. Reserve assim que definir os dias.'],
+   ['Transporte','Metrô e RER cobrem tudo. Navigo Découverte semanal (segunda a domingo) compensa para vários dias e inclui Versalhes e os aeroportos. Valide.'],
+   ['Segurança','Metrô linha 1, Montmartre e as filas de monumentos têm muitos batedores de carteira. Cuidado com pulseiras e petições.'],
+   ['Etiqueta','Diga "bonjour" ao entrar em lojas e restaurantes. A gorjeta já está incluída ("service compris").'],
+   ['Comida','Boulangerie para café da manhã e almoço (formule). Jantar começa por volta das 19h30. Prove crêpes, croissants e bistrôs.'],
+   ['Clima','Média de 6 a 15 °C em abril, chuva frequente. Camadas, guarda-chuva e calçado confortável.'],
+   ['Fechamentos','Louvre: terças. Orsay, Rodin e Versalhes: segundas. Centre Pompidou está em reforma até 2030.']
+  ],
+  comer:[
+   ['Le Marais','L’As du Fallafel e Breizh Café (crêpes) são conhecidos.'],
+   ['Boulangeries','Compre o "formule" para um almoço barato.']
+  ]
+};
+
+// Banco de ideias de Paris para o construtor de dias. h = horas estimadas, c = categoria, f = dias fechados (0 dom ... 6 sáb), r = precisa reservar
+const PARIS_IDEAS = [
+  {k:'eiffel',c:'Ícone',h:2.5,f:[],r:'Subida ao topo: reserve online, ingressos abrem cerca de 60 dias antes.'},
+  {k:'trocadero',c:'Ícone',h:0.5,f:[],r:''},
+  {k:'arco',c:'Ícone',h:1,f:[],r:'Terraço: reserve online para evitar fila.'},
+  {k:'louvre',c:'Museu',h:3.5,f:[2],r:'Horário marcado obrigatório. Fecha às terças.'},
+  {k:'orsay',c:'Museu',h:2.5,f:[1],r:'Reserve horário. Fecha às segundas.'},
+  {k:'rodin',c:'Museu',h:1.5,f:[1],r:'Jardim lindo. Fecha às segundas.'},
+  {k:'invalides',c:'Museu',h:1.5,f:[],r:'Túmulo de Napoleão.'},
+  {k:'saintechap',c:'Igreja',h:1.5,f:[],r:'Vitrais; reserve horário, a fila é longa.'},
+  {k:'notredame',c:'Igreja',h:1,f:[],r:'Entrada gratuita; há reserva opcional gratuita.'},
+  {k:'tuileries',c:'Passeio',h:1,f:[],r:''},
+  {k:'latin',c:'Bairro',h:2,f:[],r:'Panthéon e livrarias.'},
+  {k:'luxembourg',c:'Passeio',h:1.5,f:[],r:''},
+  {k:'stgermain',c:'Bairro',h:1.5,f:[],r:''},
+  {k:'marais',c:'Bairro',h:2.5,f:[],r:'Place des Vosges, boas padarias.'},
+  {k:'montmartre',c:'Bairro',h:3,f:[],r:'Sacré-Cœur é de graça. Atenção a carteiristas.'},
+  {k:'sena',c:'Passeio',h:1,f:[],r:'Cruzeiro de cerca de 1h, ótimo ao pôr do sol.'},
+  {k:'garnier',c:'Museu',h:1.5,f:[],r:'Visita ao interior com ingresso.'},
+  {k:'lafayette',c:'Passeio',h:1,f:[],r:'Terraço com vista grátis.'},
+  {k:'stmartin',c:'Passeio',h:1.5,f:[],r:'Canal com cafés.'},
+  {k:'lachaise',c:'Passeio',h:2,f:[],r:'Cemitério famoso (Oscar Wilde, Jim Morrison).'},
+  {k:'versailles',c:'Bate e volta',h:7,f:[1],r:'Reserve ingresso com horário. Fecha às segundas. RER C, cerca de 40 min.'},
+  {k:'giverny',c:'Bate e volta',h:7,f:[],r:'Jardim de Monet, que costuma abrir no começo de abril; confirme. Trem a Vernon e ônibus.'}
+];
+// ===== Reservas e compras antecipadas =====
+// regra: antes = abre N dias antes da visita; agora; monitorar; ate = fazer até a data; flex = recomendado N dias antes; aberto = tema sem data
+const BOOKINGS = [
+ {id:'passaporte',cat:'Documento',cidade:'Geral',titulo:'Conferir validade do passaporte',prio:'alta',regra:{k:'agora'},nota:'A regra para entrar no espaço Schengen: passaporte emitido há menos de 10 anos e válido por pelo menos 3 meses depois da data de saída. Se estiver perto de vencer, renove agora: a fila da Polícia Federal pode demorar.'},
+ {id:'voos',cat:'Voo',cidade:'Geral',titulo:'Passagem aérea: chegada em Roma (02/04, 11:00) e volta',prio:'alta',regra:{k:'agora'},quando:'Sex 02/04 · pouso 11:00 em FCO',nota:'A volta ainda não está na planilha. Pense em "open jaw": entra por Roma e volta por Paris, sem retornar à Itália. Compare as tarifas em várias datas de volta.'},
+ {id:'hotel-roma',cat:'Hospedagem',cidade:'Roma',titulo:'Hotel em Roma: 4 noites (02/04 a 06/04)',prio:'alta',regra:{k:'agora'},nota:'Reserve com cancelamento gratuito e acompanhe o preço. A região de Monti, Via Nazionale e Termini é prática para os trens.'},
+ {id:'hotel-flo',cat:'Hospedagem',cidade:'Florença',titulo:'Hotel em Florença: 1 noite (06/04 a 07/04)',prio:'media',regra:{k:'agora'},nota:'Perto de Santa Maria Novella, por causa da chegada à noite e da partida às 20h do dia seguinte.'},
+ {id:'hotel-mil',cat:'Hospedagem',cidade:'Milão',titulo:'Hotel em Milão: 2 noites (07/04 a 09/04)',prio:'media',regra:{k:'agora'},nota:'Perto de Milano Centrale: o trem para Tirano sai às 07:20.'},
+ {id:'hotel-int',cat:'Hospedagem',cidade:'Interlaken',titulo:'Hotel em Interlaken: 3 noites (09/04 a 12/04)',prio:'alta',regra:{k:'agora'},nota:'A Suíça tem poucos quartos e preços altos. Reserve cedo, com cancelamento gratuito.'},
+ {id:'hotel-par',cat:'Hospedagem',cidade:'Paris',titulo:'Hotel em Paris: a partir de 12/04',prio:'media',regra:{k:'aberto',t:'Ao definir quantas noites'},nota:'Quando fechar os dias de Paris, reserve. A volta ao Brasil também define a última noite.'},
+ {id:'cenacolo',cat:'Ingresso',cidade:'Milão',titulo:'A Última Ceia (Cenacolo Vinciano)',quando:'Qui 08/04 · seu plano: 15:30',prio:'alta',regra:{k:'monitorar',t:'Monitorar desde já'},link:{u:'https://cenacolovinciano.org/en/',l:'Site oficial'},nota:'Os ingressos são liberados em lotes de alguns meses e esgotam em minutos. O lote de set a dez de 2026 abriu em 23/06/2026, então o de abril de 2027 deve abrir em breve. Entre no site com frequência e tenha o cartão à mão. O local fecha às segundas. Se não conseguir, tours guiados vendem a entrada.'},
+ {id:'vaticano',cat:'Ingresso',cidade:'Roma',titulo:'Museus do Vaticano e Capela Sistina',quando:'Sáb 03/04 · 08:00',visit:'2027-04-03',prio:'alta',regra:{k:'antes',dias:60,est:false},link:{u:'https://tickets.museivaticani.va',l:'Site oficial'},preco:'cerca de €25 online (valor de 2026)',nota:'Os ingressos abrem cerca de 60 dias antes, e os horários da manhã esgotam de 3 a 4 semanas antes. Confirme no site se há entrada às 08:00; caso contrário, o 1º horário é às 09:00.'},
+ {id:'coliseu',cat:'Ingresso',cidade:'Roma',titulo:'Coliseu, Fórum Romano e Palatino',quando:'Ter 06/04 · 08:30',visit:'2027-04-06',prio:'alta',regra:{k:'antes',dias:30,est:false,hora:'08:45 (horário de Roma)'},link:{u:'https://ticketing.colosseo.it',l:'Site oficial'},preco:'€18 padrão · €24 Full Experience (valores de 2026)',nota:'O ingresso oficial é liberado 30 dias antes, às 08:45 de Roma, que é 03:45 de Brasília. Horários da manhã esgotam em horas. Nome na reserva = nome do visitante, e o documento é conferido.'},
+ {id:'borghese',cat:'Ingresso',cidade:'Roma',titulo:'Galleria Borghese',quando:'Dom 04/04 · 09:00',visit:'2027-04-04',prio:'alta',regra:{k:'antes',dias:42,est:true},link:{u:'https://www.galleriaborghese.it/',l:'Site oficial'},preco:'cerca de €18 (valor de 2026)',nota:'A janela de venda parece ser de cerca de 6 semanas, mas as informações variam. Confira o calendário no site oficial. É o 1º domingo do mês: a entrada costuma ser gratuita, ainda com reserva e taxa pequena, e esses dias abrem só uns 10 dias antes.'},
+ {id:'castel',cat:'Ingresso',cidade:'Roma',titulo:'Castel Sant’Angelo',quando:'Sáb 03/04 · 16:00',visit:'2027-04-03',prio:'media',regra:{k:'flex',dias:21},link:{u:'https://www.coopculture.it',l:'Ingressos (CoopCulture)'},nota:'Ingresso com horário por venda online. Não há prazo oficial, então 2 a 4 semanas antes é seguro.'},
+ {id:'caracalla',cat:'Ingresso',cidade:'Roma',titulo:'Termas de Caracalla',quando:'Dom 04/04 · 15:30',visit:'2027-04-04',prio:'media',regra:{k:'flex',dias:14},link:{u:'https://www.coopculture.it',l:'Ingressos (CoopCulture)'},nota:'Confira no site se o 1º domingo do mês dá entrada gratuita e se há horário marcado.'},
+ {id:'jantar-roma',cat:'Restaurante',cidade:'Roma',titulo:'Jantar especial de domingo',quando:'Dom 04/04 · 19:00',visit:'2027-04-04',prio:'media',regra:{k:'flex',dias:28},nota:'Escolha o restaurante e reserve com 2 a 4 semanas de antecedência. Domingo à noite lota.'},
+ {id:'trem-nap',cat:'Trem',cidade:'Nápoles',titulo:'Trem Roma ⇄ Nápoles (ida 08:00, volta 18:30)',quando:'Seg 05/04',visit:'2027-04-05',prio:'media',regra:{k:'antes',dias:120,est:true},link:{u:'https://www.trenitalia.com',l:'Trenitalia'},link2:{u:'https://www.italotreno.com',l:'Italo'},nota:'Abre por volta de 4 meses antes. Tarifas "Super Economy" são limitadas e não reembolsáveis. Compre ida e volta com folga de 30 min na volta.'},
+ {id:'trem-rof',cat:'Trem',cidade:'Roma',titulo:'Trem Roma → Florença',quando:'Ter 06/04 · 15:30',visit:'2027-04-06',prio:'media',regra:{k:'antes',dias:120,est:true},link:{u:'https://www.trenitalia.com',l:'Trenitalia'},link2:{u:'https://www.italotreno.com',l:'Italo'},nota:'Confirme o horário de chegada (17:00 ou 18:30 na planilha). Compare Frecciarossa e Italo.'},
+ {id:'accademia',cat:'Ingresso',cidade:'Florença',titulo:'Galleria dell’Accademia (David)',quando:'Qua 07/04 · 08:15',visit:'2027-04-07',prio:'alta',regra:{k:'flex',dias:45},link:{u:'https://www.galleriaaccademiafirenze.it',l:'Site oficial'},nota:'Recomenda-se reservar pelo menos 1 mês antes. O primeiro horário é o mais tranquilo.'},
+ {id:'duomoflo',cat:'Ingresso',cidade:'Florença',titulo:'Duomo de Florença: Brunelleschi Pass (Cúpula e complexo)',quando:'Qua 07/04 · 10:00',visit:'2027-04-07',prio:'alta',regra:{k:'flex',dias:45},link:{u:'https://duomo.firenze.it/en/',l:'Site oficial'},nota:'A subida à Cúpula exige horário marcado. O passe cobre catedral, cúpula, campanário, batistério e museu.'},
+ {id:'uffizi',cat:'Ingresso',cidade:'Florença',titulo:'Galleria degli Uffizi',quando:'Qua 07/04 · 13:45',visit:'2027-04-07',prio:'alta',regra:{k:'flex',dias:45},link:{u:'https://www.uffizi.it/en/tickets',l:'Ingressos oficiais'},nota:'Ingresso com horário. Compre direto no site oficial para evitar revendedores caros.'},
+ {id:'trem-flo-mil',cat:'Trem',cidade:'Florença',titulo:'Trem Florença → Milão (20:00)',quando:'Qua 07/04 · 20:00',visit:'2027-04-07',prio:'media',regra:{k:'antes',dias:120,est:true},link:{u:'https://www.italotreno.com',l:'Italo'},link2:{u:'https://www.trenitalia.com',l:'Trenitalia'},nota:'Dá para esperar um trem mais tarde se quiser o pôr do sol no Piazzale.'},
+ {id:'duomomi',cat:'Ingresso',cidade:'Milão',titulo:'Duomo di Milano com terraços',quando:'Qui 08/04 · 08:30',visit:'2027-04-08',prio:'media',regra:{k:'flex',dias:30},link:{u:'https://www.duomomilano.it/en/',l:'Site oficial'},nota:'Escolha o ingresso que inclui o terraço (elevador ou escada). Reserve o primeiro horário.'},
+ {id:'trem-mil-tir',cat:'Trem',cidade:'Milão',titulo:'Trem regional Milão → Tirano (Trenord)',quando:'Sex 09/04 · 07:20',visit:'2027-04-09',prio:'baixa',regra:{k:'flex',dias:3},link:{u:'https://www.trenord.it',l:'Trenord'},nota:'Sem reserva, cerca de €12,50. Se o Bernina sair só à tarde, ajuste o horário deste trem também.'},
+ {id:'bernina-seat',cat:'Trem',cidade:'Bernina',titulo:'Reserva de assento no Bernina Express',quando:'Sex 09/04 · plano: 11:00',visit:'2027-04-09',prio:'alta',regra:{k:'antes',dias:182,est:false},link:{u:'https://www.rhb.ch/en',l:'RhB (Rhaetian Railway)'},preco:'cerca de CHF 32 fora do verão (valor de 2026)',nota:'As reservas abrem até 6 meses antes, ou seja, já estão abertas. Só reserve depois de confirmar o horário que sai em abril de 2027: o da sua planilha pode não existir.'},
+ {id:'trem-ch',cat:'Trem',cidade:'Bernina',titulo:'Passes e bilhetes suíços: Swiss Travel Pass ou Half Fare Card',quando:'09/04 a 12/04',visit:'2027-04-09',prio:'media',regra:{k:'ate',date:'2027-02-15'},link:{u:'https://www.sbb.ch/en',l:'SBB'},nota:'Faça a conta entre Swiss Travel Pass de 4 dias consecutivos, Half Fare Card e bilhetes avulsos (Tirano–Chur, Chur–Interlaken, Jungfraujoch, Mürren, Interlaken–Berna). O Half Fare costuma compensar com o Jungfraujoch.'},
+ {id:'jungfrau',cat:'Passeio',cidade:'Interlaken',titulo:'Jungfraujoch (Top of Europe)',quando:'Sáb 10/04 · 08:30',visit:'2027-04-10',prio:'media',regra:{k:'flex',dias:2},link:{u:'https://www.jungfrau.ch',l:'Jungfrau Railways'},preco:'cerca de CHF 169 (Good Morning) a CHF 235 (valores de 2026)',nota:'Compre 1 a 3 dias antes, olhando previsão e webcams. Se o tempo estiver ruim, troque a ordem com o domingo. Em abril pode estar em horário de inverno.'},
+ {id:'trem-par',cat:'Trem',cidade:'Interlaken',titulo:'TGV Lyria Interlaken/Berna → Paris',quando:'Seg 12/04 · de manhã',visit:'2027-04-12',prio:'alta',regra:{k:'antes',dias:120,est:true},link:{u:'https://www.sncf-connect.com',l:'SNCF Connect'},link2:{u:'https://www.sbb.ch/en',l:'SBB'},nota:'A reserva do TGV Lyria é obrigatória. Compare Berna, Basel e Zurique como pontos de saída, e confirme a estação de chegada em Paris.'},
+ {id:'paris-ing',cat:'Ingresso',cidade:'Paris',titulo:'Paris: Louvre, Torre Eiffel, Sainte-Chapelle, Versalhes',prio:'media',regra:{k:'aberto',t:'Ao definir os dias'},link:{u:'https://www.toureiffel.paris/en',l:'Torre Eiffel'},nota:'Louvre exige horário marcado. A Torre Eiffel abre as vendas cerca de 60 dias antes. Use o construtor de dias na aba Paris.'},
+ {id:'esim',cat:'Conectividade',cidade:'Geral',titulo:'Chip ou eSIM para a Europa',quando:'Sex 02/04',visit:'2027-04-02',prio:'baixa',regra:{k:'flex',dias:7},nota:'Instale o eSIM antes de embarcar e ative ao pousar. Baixe mapas offline.'}
+];
+
+// ===== Hospedagem =====
+const STAYS = {
+ roma:{zona:'Monti, Via Nazionale e Termini',centro:[41.8990,12.4960],raio:750,in:'2027-04-02',out:'2027-04-06',
+  por:['Você chega, vai a Nápoles e parte de Roma por Termini: quatro idas e vindas à estação.','Coliseu a 15–20 min a pé e metrô B direto; Trevi e Espanha a 15–20 min.','Vaticano a 20–25 min de metrô A, sem baldeação.','Monti tem boas trattorias e é mais tranquilo à noite que a região logo em frente à estação.'],
+  hoteis:[['Hotel Artemide','Via Nazionale','Conforto, perto de Termini'],['Hotel Quirinale','Via Nazionale','Clássico, perto de Termini'],['Monti Palace Hotel','Monti','Perto do Fórum, ambiente de bairro']],
+  evitar:'Quartos logo ao lado de Termini podem ser barulhentos e a vizinhança imediata é movimentada à noite. Prefira Monti ou a Via Nazionale.'},
+ florenca:{zona:'Santa Maria Novella e San Lorenzo',centro:[43.7745,11.2488],raio:550,in:'2027-04-06',out:'2027-04-07',
+  por:['Você chega à noite e parte às 20:00 do dia seguinte: perto da estação é o mais prático.','Accademia, Mercato Centrale e Duomo ficam a 10–15 min a pé.','Em uma noite só, não vale a pena atravessar o rio.'],
+  hoteis:[['Grand Hotel Baglioni','Piazza dell’Unità Italiana','Com terraço, perto da estação'],['Hotel Santa Maria Novella','Piazza Santa Maria Novella','Boa localização'],['Hotel Delle Nazioni','Via Alamanni','Opção mais simples perto da estação']],
+  evitar:'Ficar do outro lado do rio, em Oltrarno, é charmoso mas exige atravessar a cidade com malas.'},
+ milao:{zona:'Milano Centrale e Repubblica',centro:[45.4850,9.2040],raio:600,in:'2027-04-07',out:'2027-04-09',
+  por:['O trem para Tirano sai às 07:20 de Milano Centrale: acordar e andar 5 min é ouro.','Você chega às 22:00 de Florença na mesma estação.','Metrô M2 e M3 ligam ao Duomo em 10–15 min.'],
+  hoteis:[['Hotel Berna','Via Napo Torriani','Perto de Centrale, funcional'],['Ibis Milano Centrale','Via Ferrante Aporti','Econômico, a poucos minutos da estação'],['Excelsior Hotel Gallia','Piazza Duca d’Aosta','Luxo, em frente à estação']],
+  evitar:'Brera e Navigli são mais charmosos, mas ficam 20–30 min da estação e você sai às 06:30.'},
+ interlaken:{zona:'Entre Interlaken Ost e a Höheweg',centro:[46.6893,7.8650],raio:600,in:'2027-04-09',out:'2027-04-12',
+  por:['Os trens para o Jungfraujoch e para Lauterbrunnen saem de Interlaken Ost.','Você chega à noite e sai cedo na segunda: perto de uma das estações.','Interlaken West tem mais lojas e mercados; Höheweg é o passeio central.'],
+  hoteis:[['Hotel Interlaken','Höheweg','Tradicional e central'],['Victoria-Jungfrau Grand Hotel & Spa','Höheweg','Luxo clássico'],['Hotel Lötschberg','Perto da estação West','Custo-benefício'],['Backpackers Villa Sonnenhof','Alpenstrasse','Opção econômica, com quartos privados']],
+  evitar:'Ficar em Grindelwald ou Wengen é lindo, mas complica a viagem de ida e a partida para Paris.'},
+ paris:{zona:'A definir: Marais, Saint-Germain ou Quartier Latin',centro:[48.8530,2.3600],raio:900,in:'2027-04-12',out:null,
+  por:['Marais: central, bom à noite, perto de Notre-Dame e das linhas 1 e 14.','Saint-Germain e Quartier Latin: a pé até Louvre, Orsay e Notre-Dame.','Montmartre: vista e charme, mas com ladeiras e escadas.'],
+  hoteis:[],evitar:'Evite hotéis perto da Gare du Nord e da Gare de l’Est se puder: bairros mais agitados à noite.'}
+};
+
+// ===== Trens e trajetos =====
+const TRENS = [
+ {d:'2027-04-02',de:'fco',para:'termini',saida:'~12:00',cheg:'~12:30',dur:'32 min',tipo:'Leonardo Express',res:'Sem reserva',nota:'Cerca de €14. Sai a cada 15 min.'},
+ {d:'2027-04-05',de:'termini',para:'napcentrale',saida:'08:00',cheg:'09:15',dur:'1h15',tipo:'Frecciarossa ou Italo',res:'Reserva obrigatória',nota:'Cerca de 225 km por trilhos.',bk:'trem-nap'},
+ {d:'2027-04-05',de:'napcentrale',para:'termini',saida:'18:30',cheg:'19:45',dur:'1h15',tipo:'Frecciarossa ou Italo',res:'Reserva obrigatória',nota:'Deixe folga na volta.',bk:'trem-nap'},
+ {d:'2027-04-06',de:'termini',para:'smn',saida:'15:30',cheg:'17:00 (ou 18:30)',dur:'1h30',tipo:'Frecciarossa ou Italo',res:'Reserva obrigatória',nota:'Planilha tem dois horários de chegada.',bk:'trem-rof'},
+ {d:'2027-04-07',de:'smn',para:'mcentral',saida:'20:00',cheg:'22:00',dur:'2h00',tipo:'Frecciarossa ou Italo',res:'Reserva obrigatória',nota:'Chegada à noite em Milano Centrale.',bk:'trem-flo-mil'},
+ {d:'2027-04-09',de:'mcentral',para:'tirano',saida:'07:20',cheg:'09:55',dur:'2h35',tipo:'Regional Trenord',res:'Sem reserva',nota:'Lago de Como e Valtellina.',bk:'trem-mil-tir'},
+ {d:'2027-04-09',de:'tirano',para:'chur',saida:'11:00 (confirmar)',cheg:'15:10',dur:'4h10',tipo:'Bernina Express (RhB)',res:'Assento obrigatório no panorâmico',nota:'Horário a confirmar para abril.',bk:'bernina-seat',alerta:true},
+ {d:'2027-04-09',de:'chur',para:'intost',saida:'16:15',cheg:'19:40',dur:'3h25',tipo:'Trens SBB via Zurique',res:'Sem reserva',nota:'Baldeações curtas e sincronizadas.',bk:'trem-ch'},
+ {d:'2027-04-10',de:'intost',para:'jungfraujoch',saida:'08:30',cheg:'11:30',dur:'3h00',tipo:'Jungfrau Railways',res:'Bilhete, reserva em alta temporada',nota:'Laço: sobe por Lauterbrunnen e desce por Grindelwald.',bk:'jungfrau'},
+ {d:'2027-04-11',de:'intost',para:'murren',saida:'09:00',cheg:'~12:00',dur:'~1h30',tipo:'Trem, teleférico e trem',res:'Sem reserva',nota:'Lauterbrunnen → Grütschalp → Mürren.'},
+ {d:'2027-04-12',de:'intost',para:'gdl',saida:'08:00',cheg:'13:40',dur:'~5h40',tipo:'SBB até Berna + TGV Lyria',res:'Reserva obrigatória no TGV',nota:'Gare de Lyon ou Gare de l’Est, a confirmar.',bk:'trem-par'}
+];
+
+// ===== Dicas gerais e documentos =====
+const GERAL = [
+ {t:'Documentos e entrada',i:[
+  ['Passaporte','Válido por pelo menos 3 meses após a saída do espaço Schengen e emitido há menos de 10 anos.'],
+  ['EES','Sistema de entrada e saída do espaço Schengen: foto e digitais na primeira entrada. Reserve tempo extra na imigração.'],
+  ['ETIAS','Autorização de viagem de cerca de €7 para brasileiros, prevista para "ainda em 2026" e adiada várias vezes. Confirme em travel-europe.europa.eu/etias se já será exigida em abril/2027.'],
+  ['Seguro viagem','Não é exigido para brasileiros, mas é muito recomendado, com cobertura médica de pelo menos €30.000 e repatriação.'],
+  ['Cópias','Guarde cópia digital do passaporte, das reservas e do seguro. Imprima os ingressos mais importantes.']]},
+ {t:'Dinheiro',i:[
+  ['Moedas','Euro na Itália e na França; franco suíço (CHF) na Suíça, que tem preços bem mais altos.'],
+  ['Cartão','Aceito quase em todo lugar. Avise o banco e prefira pagar em moeda local, nunca em reais, na máquina.'],
+  ['Dinheiro vivo','Leve algum euro para cafés, banheiros e feiras.'],
+  ['Gorjeta','Itália: não é obrigatória (couvert já cobrado). Suíça e França: serviço incluso, arredonde para cima se gostar.']]},
+ {t:'Comunicação e eletrônicos',i:[
+  ['Fuso','Na Europa, 5 h à frente de Brasília em abril (6 h de Cuiabá). O horário de verão europeu começa em 28/03/2027.'],
+  ['Tomadas','Itália: C, F e L. Suíça: J. França: C e E. O adaptador universal resolve tudo. 230 V: confira se seus aparelhos são bivolt.'],
+  ['Internet','eSIM de dados é a opção mais simples. Baixe mapas offline do Google Maps de cada cidade.'],
+  ['Apps úteis','Trenitalia, Italo, SBB Mobile, SNCF Connect, Citymapper, Google Tradutor.']]},
+ {t:'Transporte e trens',i:[
+  ['Validar bilhetes','Na Itália, bilhetes de trem regional e de metrô de papel precisam ser validados antes de embarcar. Bilhetes de alta velocidade são nominais.'],
+  ['Greves','Greves de trem ("scioperi") são comuns na Itália e anunciadas com antecedência. Acompanhe e prefira tarifas flexíveis nos dias de conexões.'],
+  ['Malas','Uma mala média por pessoa facilita muito as baldeações. Elevadores nas estações suíças e italianas são raros.'],
+  ['Pontualidade','Trens suíços são pontualíssimos. Chegue 10 min antes. Na Itália, margem de 15 min nas conexões.']]},
+ {t:'Segurança',i:[
+  ['Carteiristas','Termini, metrô, Nápoles, Milano Centrale e Paris pedem cuidado. Mochila na frente e celular guardado nas filas.'],
+  ['Golpes','Pulseiras de amizade, petições, "ajuda" em máquinas de bilhete e táxis sem taxímetro.'],
+  ['Emergência','112 na Itália, França e Suíça. Na Suíça: polícia 117, ambulância 144.']]},
+ {t:'Roupas e clima em abril (médias aproximadas)',i:[
+  ['Roma','9 a 19 °C, algumas chuvas.'],['Florença','7 a 18 °C.'],['Milão','7 a 17 °C, possibilidade de névoa.'],
+  ['Interlaken','3 a 13 °C, noites frias.'],['Jungfraujoch','Entre −10 e −3 °C, com vento.'],['Paris','6 a 15 °C, tempo mudando rápido.'],
+  ['Camadas','Camiseta térmica, casaco médio, corta-vento, luvas e gorro para a Suíça, guarda-chuva compacto.']]},
+ {t:'Etiqueta e cultura',i:[
+  ['Igrejas','Ombros e joelhos cobertos, silêncio e sem fotos onde houver aviso.'],
+  ['Cumprimentos','Itália: "buongiorno". Suíça alemã: "Grüezi". França: sempre "bonjour" ao entrar em lojas.'],
+  ['Horários de almoço e jantar','Italianos jantam depois das 19h30. Muitas lojas pequenas fecham no meio da tarde.']]}
+];
+
+const FRASES = [
+ ['Olá / Bom dia','Buongiorno','Grüezi','Bonjour'],
+ ['Por favor','Per favore','Bitte','S’il vous plaît'],
+ ['Obrigada(o)','Grazie','Danke','Merci'],
+ ['Quanto custa?','Quanto costa?','Was kostet das?','Combien ça coûte ?'],
+ ['A conta, por favor','Il conto, per favore','Die Rechnung, bitte','L’addition, s’il vous plaît'],
+ ['Onde fica…?','Dov’è…?','Wo ist…?','Où est… ?'],
+ ['Uma mesa para dois','Un tavolo per due','Einen Tisch für zwei','Une table pour deux'],
+ ['Sem glúten / alergia','Senza glutine / allergia','Glutenfrei / Allergie','Sans gluten / allergie']
+];
+
+// ===== Checklist de mala =====
+const MALA = [
+ {t:'Documentos',i:['Passaporte','Cópias digitais e impressas','Reservas e ingressos','Seguro viagem','Cartões e dinheiro (€ e CHF)','Autorização ETIAS, se estiver em vigor']},
+ {t:'Eletrônicos',i:['Celular e carregador','Power bank','Adaptador universal','Fones de ouvido','Câmera, se levar']},
+ {t:'Roupas em camadas',i:['Camisetas térmicas','Casaco médio','Corta-vento impermeável','Calças confortáveis','Lenço leve para igrejas','Calçado confortável e impermeável','Meias grossas']},
+ {t:'Suíça e Jungfraujoch',i:['Luvas e gorro','Óculos de sol','Protetor solar e labial','Casaco quente','Garrafinha de água']},
+ {t:'Saúde',i:['Remédios de uso contínuo com receita','Analgésico e remédio para enjoo','Band-aids e pomada para bolhas','Repelente e protetor solar']},
+ {t:'Extras',i:['Guarda-chuva compacto','Mochila pequena de dia','Bolsa anti-furto','Sacos para roupas']}
+];
+
+// ===== Pontos de atenção na planilha =====
+const ATENCAO = [
+ {sev:'alta',t:'O horário do Bernina Express na planilha provavelmente não existe em abril',txt:'Na planilha, o Bernina sai de Tirano às 11:00 e chega a Chur às 15:10. Na tabela de 2026, o serviço saía às 08:06 (só de 2 de maio a 25 de outubro) e às 14:24 (o ano todo). Se em abril de 2027 só existir o das 14:24, a chegada a Chur seria 18:31 e a Interlaken depois das 22:00.',sug:'Confirme os horários de 2027 no site da RhB (rhb.ch) e no SBB quando saírem, geralmente em dezembro. Alternativas: sair mais tarde de Milão e pegar o das 14:24; dormir em Tirano ou Chur e seguir no dia seguinte; ou fazer só parte do trecho. Até lá, reserve hotéis com cancelamento gratuito.'},
+ {sev:'alta',t:'A Última Ceia é o ingresso mais difícil da viagem',txt:'Os lotes saem de tempos em tempos e esgotam em minutos. O horário que você conseguir define o resto do dia 08/04, e a planilha assume 15:30.',sug:'Acompanhe cenacolovinciano.org a partir de agora e prepare o cartão. Se não achar, procure tours guiados que incluem a entrada.'},
+ {sev:'media',t:'Roma → Florença chega às 17:00 ou às 18:30?',txt:'A seção de Roma diz que o trem de 15:30 chega às 17:00 (1h30). A seção de Florença diz que você chega às 18:30.',sug:'Confira o horário comprado. Se for 17:00, você ganha cerca de 1h30 de tarde livre em Florença.'},
+ {sev:'media',t:'Museus do Vaticano às 08:00',txt:'O 1º horário para o público geral costuma ser mais tarde. Entradas às 08:00 costumam ser tours especiais.',sug:'Confira no site oficial a primeira entrada. Se for 09:00, ajuste o dia: São Pedro e Castel Sant’Angelo podem vir antes.'},
+ {sev:'media',t:'Domingo 04/04 é o primeiro domingo do mês',txt:'Muitos museus estatais italianos ficam gratuitos nesse dia, o que gera filas maiores. Galleria Borghese e Caracalla podem ser afetadas.',sug:'Reserve a Borghese com antecedência e chegue cedo. Confirme se a regra continua válida para 2027.'},
+ {sev:'media',t:'Greves de trem na Itália',txt:'Os dias 05, 06, 07 e 09/04 têm trens de alta velocidade encadeados, e uma greve é comum de acontecer.',sug:'Consulte os avisos de greve na semana da viagem e prefira tarifas flexíveis nos trens-chave (Florença → Milão às 20:00).'},
+ {sev:'media',t:'O voo de volta e o número de dias em Paris não estão definidos',txt:'A planilha termina na chegada a Paris, em 12/04.',sug:'Use o construtor de dias na aba Paris para decidir quantas noites faltam, e defina a data do voo de volta.'},
+ {sev:'baixa',t:'Pôr do sol: Aventino e Piazzale Michelangelo',txt:'Em Roma (04/04) e Florença (07/04), o pôr do sol é por volta das 19h30 e 19h50, mais tarde que os horários da planilha (18:30 e 18:45).',sug:'Para a luz dourada, antecipe um pouco, ou mova o horário. Em Florença, seu trem sai às 20:00.'},
+ {sev:'baixa',t:'Interlaken → Berna leva cerca de 55 min, não 2h30',txt:'A planilha prevê 2h30 até Berna ou Zurique, o que parece folgado.',sug:'Se o TGV sai de Berna, confirme o horário no SBB e talvez saia mais tarde.'},
+ {sev:'baixa',t:'Linha duplicada na planilha: chegada a Interlaken',txt:'As linhas das 19:40 aparecem duas vezes na sexta, 09/04.',sug:'Unifiquei em um só item neste guia.'},
+ {sev:'baixa',t:'Jungfraujoch depende do tempo',txt:'Nuvens e vento podem fechar a vista.',sug:'Deixe o sábado ou o domingo flexíveis, olhe as webcams e compre o bilhete 1 a 3 dias antes.'}
+];
+// ===== utilidades gerais =====
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const WD = ['dom','seg','ter','qua','qui','sex','sáb'];
+const WDL = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+const MES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const MESL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const D = s => { const [y,m,d] = s.split('-').map(Number); return new Date(Date.UTC(y,m-1,d)); };
+const addD = (dt,n) => new Date(dt.getTime() + n*864e5);
+const TODAY = (() => { const n = new Date(); return new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate())); })();
+const pad2 = n => String(n).padStart(2,'0');
+const dd = dt => pad2(dt.getUTCDate());
+const mm = dt => pad2(dt.getUTCMonth()+1);
+const fmtS = dt => dd(dt)+'/'+mm(dt);
+const fmt = dt => fmtS(dt)+'/'+dt.getUTCFullYear();
+const fmtW = dt => WD[dt.getUTCDay()]+' '+fmtS(dt);
+const diffD = (a,b) => Math.round((a-b)/864e5);
+const km1 = k => k < 10 ? k.toFixed(1).replace('.',',') : String(Math.round(k));
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+const store = {
+  get(k, def){ try { const v = localStorage.getItem('et27.'+k); return v == null ? def : JSON.parse(v); } catch(e){ return def; } },
+  set(k, v){ try { localStorage.setItem('et27.'+k, JSON.stringify(v)); } catch(e){} }
+};
+
+// ===== geometria e modos de transporte =====
+function hav(a, b){
+  const R = 6371, t = Math.PI/180;
+  const dl = (b[0]-a[0])*t, dn = (b[1]-a[1])*t;
+  const x = Math.sin(dl/2)**2 + Math.cos(a[0]*t)*Math.cos(b[0]*t)*Math.sin(dn/2)**2;
+  return 2*R*Math.asin(Math.sqrt(x));
+}
+const MODES = {
+  walk:{n:'A pé', c:'var(--accent)', dash:'7 5'},
+  metro:{n:'Metrô', c:'var(--warn)', dash:''},
+  bus:{n:'Ônibus', c:'var(--warn)', dash:'2 5'},
+  taxi:{n:'Táxi', c:'var(--warn)', dash:'2 5'},
+  train:{n:'Trem', c:'var(--ink)', dash:''},
+  cable:{n:'Teleférico', c:'var(--fr)', dash:'9 4'}
+};
+function estMin(mode, km){
+  if (mode === 'walk') return Math.round(km*1.3/4.8*60);
+  if (mode === 'metro') return Math.round(km*1.25/22*60 + 6);
+  if (mode === 'bus' || mode === 'taxi') return Math.round(km*1.3/16*60 + 6);
+  return null;
+}
+function fmtMin(m){
+  if (m == null) return '–';
+  if (m < 60) return '~' + Math.max(1, m) + ' min';
+  return '~' + Math.floor(m/60) + 'h' + pad2(m%60);
+}
+const ll = p => p[0].toFixed(5) + ',' + p[1].toFixed(5);
+function gmapsDir(pts, mode){
+  if (pts.length < 2) return 'https://www.google.com/maps/search/?api=1&query=' + ll([pts[0].lat, pts[0].lon]);
+  let mid = pts.slice(1, -1);
+  if (mid.length > 8){ const step = mid.length/8; mid = Array.from({length:8}, (_, i) => mid[Math.floor(i*step)]); }
+  const f = p => ll([p.lat, p.lon]);
+  let u = 'https://www.google.com/maps/dir/?api=1&origin=' + f(pts[0]) + '&destination=' + f(pts[pts.length-1]) + '&travelmode=' + mode;
+  if (mid.length) u += '&waypoints=' + mid.map(f).join('%7C');
+  return u;
+}
+const gmapsPin = p => 'https://www.google.com/maps/search/?api=1&query=' + ll([p.lat, p.lon]);
+
+// Constrói pontos e trechos de um dia a partir dos itens
+function buildDay(day){
+  const pts = [], hops = [], itemPins = [];
+  day.items.forEach((it, ii) => {
+    itemPins[ii] = [];
+    (it.p || []).forEach(s => {
+      const [key, mode] = s.split(':');
+      const pl = P[key]; if (!pl) return;
+      const last = pts[pts.length-1];
+      if (last && last.key === key){ itemPins[ii].push(pts.length-1); return; }
+      pts.push({key, lat:pl[0], lon:pl[1], name:pl[2], type:pl[3], item:ii});
+      const idx = pts.length-1;
+      itemPins[ii].push(idx);
+      if (idx > 0) hops.push({a:idx-1, b:idx, mode:mode || 'walk'});
+    });
+  });
+  hops.forEach(h => {
+    h.km = hav([pts[h.a].lat, pts[h.a].lon], [pts[h.b].lat, pts[h.b].lon]);
+    h.min = estMin(h.mode, h.km);
+  });
+  const total = hops.reduce((s,h) => s + h.km, 0);
+  const walkKm = hops.filter(h => h.mode === 'walk').reduce((s,h) => s + h.km*1.3, 0);
+  const walkMin = hops.filter(h => h.mode === 'walk').reduce((s,h) => s + h.min, 0);
+  return {pts, hops, itemPins, total, walkKm, walkMin};
+}
+
+// ===== mapa esquemático em SVG, com zoom, arrasto e rótulos de distância =====
+function createMap(host, cfg){
+  const W = 800, H = 600;
+  let vb = {x:0, y:0, w:W, h:H};
+  let sel = -1, selHop = -1;
+  let showDist = cfg.showDist !== false, showNames = true, showZone = !!cfg.zone, showGrid = true;
+  let C = null; // dados de projeção
+
+  host.innerHTML =
+    '<div class="maptop">' +
+      '<button class="btn ghost" data-m="dist" aria-pressed="' + showDist + '">Distâncias</button>' +
+      '<button class="btn ghost" data-m="names" aria-pressed="true">Nomes</button>' +
+      (cfg.zone ? '<button class="btn ghost" data-m="zone" aria-pressed="true">Zona do hotel</button>' : '') +
+      '<span class="sp"></span>' +
+      '<button class="btn ghost" data-m="in" aria-label="Aproximar">+</button>' +
+      '<button class="btn ghost" data-m="out" aria-label="Afastar">−</button>' +
+      '<button class="btn ghost" data-m="reset">Ajustar</button>' +
+    '</div>' +
+    '<svg class="mapsvg" viewBox="0 0 800 600" role="img" aria-label="' + esc(cfg.label || 'Mapa esquemático') + '"></svg>' +
+    '<div class="mapfoot"></div>';
+  const svg = $('svg', host), foot = $('.mapfoot', host);
+
+  function project(){
+    const all = [];
+    cfg.pts.forEach(p => all.push([p.lat, p.lon]));
+    if (cfg.fitBg && cfg.bg){
+      const near = cfg.bg.filter(b => !b.far);
+      near.forEach(b => all.push([b.lat, b.lon]));
+    }
+    if (!all.length && cfg.zone) all.push(cfg.zone.c);
+    const lat0 = all.reduce((s,p) => s + p[0], 0)/all.length;
+    const lon0 = all.reduce((s,p) => s + p[1], 0)/all.length;
+    const kx = 111.32*Math.cos(lat0*Math.PI/180), ky = 110.57;
+    const toXY = (lat, lon) => [(lon-lon0)*kx, -(lat-lat0)*ky];
+    let xs = all.map(p => toXY(p[0], p[1])[0]), ys = all.map(p => toXY(p[0], p[1])[1]);
+    if (cfg.zone && showZone){
+      const [zx, zy] = toXY(cfg.zone.c[0], cfg.zone.c[1]), r = cfg.zone.r/1000;
+      xs.push(zx-r, zx+r); ys.push(zy-r, zy+r);
+    }
+    let minx = Math.min(...xs), maxx = Math.max(...xs), miny = Math.min(...ys), maxy = Math.max(...ys);
+    let dx = Math.max(maxx-minx, 0.5), dy = Math.max(maxy-miny, 0.4);
+    const pad = 80;
+    const s = Math.min((W-2*pad)/dx, (H-2*pad)/dy);
+    const cx = (minx+maxx)/2, cy = (miny+maxy)/2;
+    const px = (lat, lon) => { const [x, y] = toXY(lat, lon); return [W/2 + (x-cx)*s, H/2 + (y-cy)*s]; };
+    return {s, px, toXY, cx, cy};
+  }
+  const nice = v => { const e = Math.pow(10, Math.floor(Math.log10(v))); const f = v/e; return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10)*e; };
+
+  function draw(){
+    C = C || project();
+    const k = vb.w/W;
+    const out = [];
+    const boxes = [];
+    const hit = (b) => boxes.some(o => !(b[2] < o[0] || b[0] > o[2] || b[3] < o[1] || b[1] > o[3]));
+    // grade
+    if (showGrid){
+      const stepKm = nice(130/C.s);
+      const sp = stepKm*C.s;
+      const x0 = Math.floor(((vb.x - W/2)/C.s + C.cx)/stepKm)*stepKm, y0 = Math.floor(((vb.y - H/2)/C.s + C.cy)/stepKm)*stepKm;
+      for (let gx = x0; gx < vb.x + vb.w + sp; gx += stepKm){
+        const X = W/2 + (gx - C.cx)*C.s;
+        out.push('<line x1="' + X + '" y1="' + vb.y + '" x2="' + X + '" y2="' + (vb.y+vb.h) + '" stroke="var(--line)" stroke-width="' + k + '"/>');
+        if (out.length > 400) break;
+      }
+      for (let gy = y0; gy < vb.y + vb.h + sp; gy += stepKm){
+        const Y = H/2 + (gy - C.cy)*C.s;
+        out.push('<line x1="' + vb.x + '" y1="' + Y + '" x2="' + (vb.x+vb.w) + '" y2="' + Y + '" stroke="var(--line)" stroke-width="' + k + '"/>');
+        if (out.length > 800) break;
+      }
+    }
+    // zona do hotel
+    if (cfg.zone && showZone){
+      const [zx, zy] = C.px(cfg.zone.c[0], cfg.zone.c[1]);
+      out.push('<circle cx="' + zx + '" cy="' + zy + '" r="' + (cfg.zone.r/1000*C.s) + '" fill="var(--cc, var(--accent))" fill-opacity=".14" stroke="var(--cc, var(--accent))" stroke-dasharray="' + 6*k + ' ' + 4*k + '" stroke-width="' + 1.5*k + '"/>');
+      out.push('<text x="' + zx + '" y="' + (zy - cfg.zone.r/1000*C.s - 6*k) + '" text-anchor="middle" font-size="' + 12*k + '" font-weight="600" fill="var(--cc, var(--accent))" style="paint-order:stroke;stroke:var(--surface2);stroke-width:' + 3*k + 'px">Zona sugerida para dormir</text>');
+    }
+    const R = 12*k;
+    const P2 = cfg.pts.map(p => C.px(p.lat, p.lon));
+    // evita pinos sobrepostos exatamente
+    P2.forEach((q, i) => { for (let j = 0; j < i; j++){ if (Math.abs(q[0]-P2[j][0]) < 2*k && Math.abs(q[1]-P2[j][1]) < 2*k){ q[0] += 15*k; q[1] -= 15*k; } } });
+    // pinos de fundo (ideias)
+    (cfg.bg || []).forEach(b => {
+      const [x, y] = C.px(b.lat, b.lon);
+      if (b.on) return;
+      out.push('<g data-bg="' + b.key + '" style="cursor:pointer"><circle cx="' + x + '" cy="' + y + '" r="' + 7*k + '" fill="var(--surface)" stroke="var(--muted)" stroke-width="' + 1.5*k + '"/><title>' + esc(b.name) + ' (toque para adicionar)</title></g>');
+      boxes.push([x-7*k, y-7*k, x+7*k, y+7*k]);
+    });
+    // trechos
+    const hopOut = [], lblOut = [];
+    (cfg.hops || []).forEach((h, hi) => {
+      const A = P2[h.a], B = P2[h.b]; if (!A || !B) return;
+      const m = MODES[h.mode] || MODES.walk;
+      const on = hi === selHop;
+      const dash = h.dash != null ? h.dash : m.dash;
+      hopOut.push('<line x1="' + A[0] + '" y1="' + A[1] + '" x2="' + B[0] + '" y2="' + B[1] + '" stroke="' + m.c + '" stroke-width="' + (on ? 4.5 : 2.5)*k + '" stroke-linecap="round"' + (dash ? ' stroke-dasharray="' + dash.split(' ').map(v => v*k).join(' ') + '"' : '') + ' opacity="' + (on ? 1 : .8) + '"/>');
+      const dxl = B[0]-A[0], dyl = B[1]-A[1], L = Math.hypot(dxl, dyl);
+      if (L > 30*k){
+        const ux = dxl/L, uy = dyl/L, ax = A[0] + dxl*.58, ay = A[1] + dyl*.58, sz = 6*k;
+        hopOut.push('<path d="M' + (ax+ux*sz) + ' ' + (ay+uy*sz) + ' L' + (ax-ux*sz-uy*sz*.8) + ' ' + (ay-uy*sz+ux*sz*.8) + ' L' + (ax-ux*sz+uy*sz*.8) + ' ' + (ay-uy*sz-ux*sz*.8) + ' Z" fill="' + m.c + '"/>');
+      }
+      hopOut.push('<line data-hop="' + hi + '" x1="' + A[0] + '" y1="' + A[1] + '" x2="' + B[0] + '" y2="' + B[1] + '" stroke="transparent" stroke-width="' + 16*k + '" style="cursor:pointer"/>');
+      h._lbl = {x:(A[0]+B[0])/2, y:(A[1]+B[1])/2, hi, on, L};
+    });
+    out.push(...hopOut);
+    // pinos
+    const pinOut = [];
+    cfg.pts.forEach((p, i) => {
+      const [x, y] = P2[i];
+      const on = i === sel;
+      const col = p.col || (p.type === 'f' ? 'var(--warn)' : p.type === 'g' ? 'var(--ink)' : p.type === 's' ? 'var(--cc, var(--gen))' : 'var(--accent)');
+      const r = (on ? 15 : (p.type === 'c' ? 13 : 11))*k;
+      pinOut.push('<g data-pin="' + i + '" style="cursor:pointer">' + (on ? '<circle cx="' + x + '" cy="' + y + '" r="' + r + 7*k + '" fill="' + col + '" fill-opacity=".22"/>' : '') +
+        '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + col + '" stroke="var(--surface)" stroke-width="' + 2*k + '"/>' +
+        '<text x="' + x + '" y="' + (y + 4.3*k) + '" text-anchor="middle" font-size="' + 12*k + '" font-weight="700" fill="' + (p.type === 'g' || p.col ? 'var(--bg)' : '#fff') + '" style="pointer-events:none">' + (p.n != null ? p.n : i+1) + '</text><title>' + esc(p.name) + '</title></g>');
+      boxes.push([x-r, y-r, x+r, y+r]);
+    });
+    // rótulos de trecho (sem sobreposição)
+    const lblSvg = [];
+    if (showDist){
+      (cfg.hops || []).forEach((h, hi) => {
+        const l = h._lbl; if (!l) return;
+        const km = hav([cfg.pts[h.a].lat, cfg.pts[h.a].lon], [cfg.pts[h.b].lat, cfg.pts[h.b].lon]);
+        const t = h.lab ? km1(km) + ' km · ' + h.lab : (km1(km) + ' km' + (estMin(h.mode, km) != null ? ' · ' + fmtMin(estMin(h.mode, km)) : ''));
+        const w = t.length*6.1*k + 12*k, hh = 17*k;
+        const b = [l.x-w/2, l.y-hh/2, l.x+w/2, l.y+hh/2];
+        if (!l.on && hit(b)) return;
+        boxes.push(b);
+        lblSvg.push('<g style="pointer-events:none"><rect x="' + b[0] + '" y="' + b[1] + '" width="' + w + '" height="' + hh + '" rx="' + 8*k + '" fill="var(--surface)" stroke="' + (MODES[h.mode] || MODES.walk).c + '" stroke-width="' + k + '"/><text x="' + l.x + '" y="' + (l.y + 4*k) + '" text-anchor="middle" font-size="' + 10.5*k + '" font-weight="600" fill="var(--ink)">' + esc(t) + '</text></g>');
+      });
+    }
+    // nomes dos pinos
+    const nameSvg = [];
+    if (showNames){
+      const order = cfg.pts.map((_, i) => i).sort((a, b) => (b === sel) - (a === sel));
+      order.forEach(i => {
+        const p = cfg.pts[i], [x, y] = P2[i];
+        const fs = 12.5*k, w = p.name.length*6.3*k*(fs/(12.5*k)) + 6*k, hh = 16*k, r = 14*k;
+        const cand = [[x+r, y-hh/2, 'start'], [x-r-w, y-hh/2, 'end'], [x-w/2, y-r-hh, 'middle'], [x-w/2, y+r, 'middle'], [x+r, y-r-hh, 'start'], [x-r-w, y-r-hh, 'end'], [x+r, y+r*.2, 'start'], [x-r-w, y+r*.2, 'end']];
+        let pick = null;
+        for (const c of cand){ const b = [c[0], c[1], c[0]+w, c[1]+hh]; if (b[0] < vb.x+4*k || b[2] > vb.x+vb.w-4*k || b[1] < vb.y+2*k || b[3] > vb.y+vb.h-2*k) continue; if (!hit(b)){ pick = {b, a:c[2]}; break; } }
+        if (!pick && i === sel) pick = {b:[cand[0][0], cand[0][1], cand[0][0]+w, cand[0][1]+hh], a:'start'};
+        if (!pick) return;
+        boxes.push(pick.b);
+        const tx = pick.a === 'start' ? pick.b[0] + 3*k : pick.a === 'end' ? pick.b[2] - 3*k : (pick.b[0]+pick.b[2])/2;
+        nameSvg.push('<text x="' + tx + '" y="' + (pick.b[1] + 12*k) + '" text-anchor="' + pick.a + '" font-size="' + fs + '" font-weight="' + (i === sel ? 700 : 500) + '" fill="var(--ink)" style="paint-order:stroke;stroke:var(--surface2);stroke-width:' + 3.5*k + 'px;pointer-events:none">' + esc(p.name) + '</text>');
+      });
+    }
+    out.push(...pinOut, ...lblSvg, ...nameSvg);
+    // barra de escala
+    const L = nice(110*k/C.s*1.0*(W/800)); const lenPx = L*C.s;
+    const sx = vb.x + 16*k, sy = vb.y + vb.h - 18*k;
+    out.push('<g style="pointer-events:none"><rect x="' + (sx-6*k) + '" y="' + (sy-18*k) + '" width="' + (lenPx + 12*k + 40*k) + '" height="' + 28*k + '" rx="' + 6*k + '" fill="var(--surface)" fill-opacity=".85"/><line x1="' + sx + '" y1="' + sy + '" x2="' + (sx+lenPx) + '" y2="' + sy + '" stroke="var(--ink)" stroke-width="' + 2*k + '"/><line x1="' + sx + '" y1="' + (sy-4*k) + '" x2="' + sx + '" y2="' + (sy+4*k) + '" stroke="var(--ink)" stroke-width="' + 2*k + '"/><line x1="' + (sx+lenPx) + '" y1="' + (sy-4*k) + '" x2="' + (sx+lenPx) + '" y2="' + (sy+4*k) + '" stroke="var(--ink)" stroke-width="' + 2*k + '"/><text x="' + (sx+lenPx+6*k) + '" y="' + (sy+4*k) + '" font-size="' + 11*k + '" fill="var(--ink)">' + (L < 1 ? Math.round(L*1000) + ' m' : L + ' km') + '</text></g>');
+    svg.setAttribute('viewBox', vb.x + ' ' + vb.y + ' ' + vb.w + ' ' + vb.h);
+    svg.innerHTML = out.join('');
+  }
+
+  function fit(){ C = null; vb = {x:0, y:0, w:W, h:H}; }
+  function zoom(f, cx, cy){
+    const nw = Math.min(W*1.6, Math.max(W/14, vb.w*f)), nh = nw*H/W;
+    const rx = cx == null ? .5 : cx, ry = cy == null ? .5 : cy;
+    vb = {x: vb.x + (vb.w-nw)*rx, y: vb.y + (vb.h-nh)*ry, w:nw, h:nh};
+    draw();
+  }
+  function center(i){
+    const p = cfg.pts[i]; if (!p) return;
+    if (vb.w >= W*0.999) return;
+    const q = C.px(p.lat, p.lon);
+    vb.x = q[0] - vb.w/2; vb.y = q[1] - vb.h/2;
+  }
+  function setFoot(){
+    foot.textContent = 'Mapa esquemático, sem ruas. Distâncias em linha reta; o tempo a pé é estimado com 30% de desvio. Ctrl + roda do mouse ou botões +/− para zoom, arraste para mover. Use "Abrir no Google Maps" para o trajeto real.';
+  }
+
+  // interação
+  const ptrs = new Map(); let moved = 0, last = null, pinch0 = null;
+  svg.addEventListener('pointerdown', e => {
+    ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY}); moved = 0; last = {x:e.clientX, y:e.clientY};
+    if (ptrs.size === 2){ const [a, b] = [...ptrs.values()]; pinch0 = {d:Math.hypot(a.x-b.x, a.y-b.y), w:vb.w}; }
+  });
+  window.addEventListener('pointermove', e => {
+    if (!ptrs.has(e.pointerId)) return;
+    ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    const r = svg.getBoundingClientRect();
+    if (ptrs.size === 2 && pinch0){
+      const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x-b.x, a.y-b.y);
+      const nw = Math.min(W*1.6, Math.max(W/14, pinch0.w*pinch0.d/d)); const f = nw/vb.w; zoom(f); moved = 99; return;
+    }
+    if (ptrs.size === 1 && last){
+      const dx = e.clientX-last.x, dy = e.clientY-last.y; moved += Math.abs(dx) + Math.abs(dy);
+      if (e.pointerType === 'mouse' && moved > 4 && vb.w < W*1.6){
+        vb.x -= dx*vb.w/r.width; vb.y -= dy*vb.h/r.height; draw();
+      }
+      last = {x:e.clientX, y:e.clientY};
+    }
+  });
+  const up = e => {
+    if (!ptrs.has(e.pointerId)) return;
+    const wasOne = ptrs.size === 1; ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = null;
+    if (wasOne && moved < 6 && e.type === 'pointerup'){
+      const t = document.elementFromPoint(e.clientX, e.clientY);
+      const pin = t && t.closest && t.closest('[data-pin]');
+      const bg = t && t.closest && t.closest('[data-bg]');
+      const hp = t && t.closest && t.closest('[data-hop]');
+      if (pin && svg.contains(pin)){ api.select(+pin.dataset.pin, false); cfg.onPin && cfg.onPin(+pin.dataset.pin); }
+      else if (bg && svg.contains(bg)){ cfg.onBg && cfg.onBg(bg.dataset.bg); }
+      else if (hp && svg.contains(hp)){ api.selectHop(+hp.dataset.hop); cfg.onHop && cfg.onHop(+hp.dataset.hop); }
+    }
+  };
+  window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  svg.addEventListener('wheel', e => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    const r = svg.getBoundingClientRect();
+    zoom(e.deltaY < 0 ? .8 : 1.25, (e.clientX-r.left)/r.width, (e.clientY-r.top)/r.height);
+  }, {passive:false});
+  host.addEventListener('click', e => {
+    const b = e.target.closest('[data-m]'); if (!b) return;
+    const m = b.dataset.m;
+    if (m === 'in') zoom(.7); else if (m === 'out') zoom(1.4);
+    else if (m === 'reset'){ fit(); draw(); }
+    else {
+      const on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', on);
+      if (m === 'dist') showDist = on; if (m === 'names') showNames = on; if (m === 'zone'){ showZone = on; fit(); }
+      draw();
+    }
+  });
+
+  const api = {
+    select(i, doCenter){ sel = i; selHop = -1; if (doCenter !== false) center(i); draw(); },
+    selectHop(h){ selHop = h; sel = -1; draw(); },
+    update(next){ Object.assign(cfg, next); fit(); sel = -1; selHop = -1; draw(); setFoot(); },
+    redraw(){ draw(); },
+    refit(){ fit(); draw(); }
+  };
+  setFoot(); draw();
+  return api;
+}
+// ===== estado =====
+const GRUPOS = [
+  {id:'geral', label:'Visão geral', subs:[['geral','Visão geral']]},
+  {id:'it', label:'Itália', cor:'IT', subs:[['roma','Roma'],['napoles','Nápoles'],['florenca','Florença'],['milao','Milão']]},
+  {id:'ch', label:'Suíça', cor:'CH', subs:[['bernina','Bernina Express'],['interlaken','Interlaken']]},
+  {id:'fr', label:'França', cor:'FR', subs:[['paris','Paris']]},
+  {id:'plan', label:'Planejamento', subs:[['reservas','Reservas e prazos'],['trens','Trens e trajetos'],['hospedagem','Hospedagem'],['dicas','Dicas e documentos'],['mala','Checklist'],['atencao','Pontos de atenção']]}
+];
+const NOMES_CIDADE = {roma:'Roma', napoles:'Nápoles', florenca:'Florença', milao:'Milão', bernina:'Bernina', interlaken:'Interlaken', paris:'Paris'};
+const TRIP_START = D('2027-04-02');
+const S = {tab:'geral', city:{}, res:{view:'lista', cidade:'', cat:'', pend:false, date:null}, parisSel:0};
+let DONE = store.get('done', {});
+const setDone = (k, v) => { if (v) DONE[k] = 1; else delete DONE[k]; store.set('done', DONE); };
+let MAP = null, MAP2 = null;
+const view = $('#view');
+
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 2200); }
+function groupOf(id){ return GRUPOS.find(g => g.subs.some(s => s[0] === id)) || GRUPOS[0]; }
+function colorOf(city){ return COUNTRY[city.pais].cor; }
+
+// ===== cálculo de datas das reservas =====
+function bkInfo(b){
+  const r = b.regra, done = !!DONE['bk:' + b.id];
+  let date = null, label = '', big = '', small = '', cls = '', sortKey = 0, group = 'datado';
+  if (r.k === 'agora'){ big = 'Já'; small = 'agora'; label = 'Fazer agora'; cls = 'urgent'; group = 'agora'; }
+  else if (r.k === 'monitorar'){ big = '···'; small = 'vigiar'; label = r.t; cls = 'urgent'; group = 'agora'; }
+  else if (r.k === 'aberto'){ big = '–'; small = 'a definir'; label = r.t; group = 'aberto'; }
+  else {
+    if (r.k === 'ate') date = D(r.date);
+    else date = addD(D(b.visit), -r.dias);
+    const n = diffD(date, TODAY);
+    big = dd(date); small = MES[date.getUTCMonth()] + (date.getUTCFullYear() !== TODAY.getUTCFullYear() ? ' ' + String(date.getUTCFullYear()).slice(2) : '');
+    if (r.k === 'antes'){
+      if (n <= 0){ label = 'Já aberto: reserve agora'; cls = 'open'; }
+      else { label = 'Abre em ' + n + (n === 1 ? ' dia' : ' dias') + (r.est ? ' (estimado)' : ''); cls = n <= 45 ? 'soon' : ''; }
+    } else if (r.k === 'flex'){
+      if (n <= 0){ label = 'Pode reservar agora'; cls = 'open'; }
+      else { label = 'Reservar em ' + n + (n === 1 ? ' dia' : ' dias') + ' (recomendado)'; cls = n <= 45 ? 'soon' : ''; }
+    } else {
+      if (n < 0){ label = 'Prazo passou'; cls = 'urgent'; } else { label = 'Fazer em até ' + n + ' dias'; cls = n <= 45 ? 'soon' : ''; }
+    }
+    sortKey = date.getTime();
+  }
+  if (done) cls = 'isdone';
+  return {date, label, big, small, cls, sortKey, group, done};
+}
+function bkSorted(list){
+  const ord = {agora:0, datado:1, aberto:2};
+  return list.map(b => ({b, i:bkInfo(b)})).sort((x, y) => ord[x.i.group] - ord[y.i.group] || x.i.sortKey - y.i.sortKey || (x.b.prio === 'alta' ? -1 : 1));
+}
+function bkCard(b, i){
+  const links = [b.link, b.link2].filter(Boolean).map((l, n) => '<a class="btn' + (n ? '' : ' solid') + '" href="' + l.u + '" target="_blank" rel="noopener">' + esc(l.l) + '</a>').join('');
+  const pr = b.prio === 'alta' ? '<span class="chip dan">Prioridade alta</span>' : b.prio === 'media' ? '<span class="chip warn">Média</span>' : '<span class="chip">Baixa</span>';
+  return '<article class="bk ' + i.cls + '" id="bk-' + b.id + '">' +
+    '<div class="date"><b>' + i.big + '</b><span>' + i.small + '</span></div>' +
+    '<div style="min-width:0"><h4>' + esc(b.titulo) + '</h4>' +
+      '<div class="row" style="margin:4px 0 6px"><span class="chip">' + esc(b.cat) + '</span><span class="chip acc">' + esc(b.cidade) + '</span>' + pr + '<span class="chip ' + (i.cls === 'open' || i.cls === 'urgent' ? 'ok' : '') + '">' + esc(i.label) + '</span></div>' +
+      (b.quando ? '<p class="small muted"><b>Para:</b> ' + esc(b.quando) + '</p>' : '') +
+      (b.regra.hora ? '<p class="small muted"><b>Horário de abertura:</b> ' + esc(b.regra.hora) + '</p>' : '') +
+      (b.preco ? '<p class="small muted"><b>Valor:</b> ' + esc(b.preco) + '</p>' : '') +
+      '<p style="margin-top:6px">' + esc(b.nota) + '</p>' +
+      (i.date ? '<p class="small muted" style="margin-top:6px">Data de ação: ' + fmtW(i.date) + '/' + i.date.getUTCFullYear() + (b.regra.est ? ' (estimativa, confirme no site)' : '') + '</p>' : '') +
+    '</div>' +
+    '<div class="acts">' + links + '<label class="btn ghost" style="cursor:pointer"><input type="checkbox" data-ck="bk:' + b.id + '"' + (i.done ? ' checked' : '') + '> Já fiz</label></div></article>';
+}
+
+// ===== navegação =====
+function go(id, opt){
+  S.tab = id;
+  if (opt && opt.day != null){ (S.city[id] = S.city[id] || {day:0, tab:'dicas'}).day = opt.day; }
+  if (opt && opt.itab){ (S.city[id] = S.city[id] || {day:0, tab:'dicas'}).tab = opt.itab; }
+  try { if (location.hash.slice(1) !== id) location.hash = id; } catch(e){}
+  render();
+  window.scrollTo(0, 0);
+}
+function renderNav(){
+  const g = groupOf(S.tab);
+  $('#groups').innerHTML = GRUPOS.map(x => '<button role="tab" data-go="' + x.subs[0][0] + '" aria-selected="' + (x.id === g.id) + '">' + (x.cor ? '<span class="dot ' + x.cor + '"></span>' : '') + x.label + '</button>').join('');
+  const sub = $('#subs');
+  if (g.subs.length > 1){ sub.hidden = false; sub.innerHTML = g.subs.map(s => '<button role="tab" data-go="' + s[0] + '" aria-selected="' + (s[0] === S.tab) + '">' + s[1] + '</button>').join(''); }
+  else sub.hidden = true;
+}
+function render(){
+  renderNav(); MAP = null; MAP2 = null;
+  const id = S.tab;
+  if (CITIES[id]) renderCity(id);
+  else ({geral:renderGeral, reservas:renderReservas, trens:renderTrens, hospedagem:renderHospedagem, dicas:renderDicas, mala:renderMala, atencao:renderAtencao})[id]();
+  syncChecks();
+}
+function syncChecks(){
+  $$('[data-ck]', view).forEach(c => { c.checked = !!DONE[c.dataset.ck]; const li = c.closest('.it, .bk, li'); if (li) li.classList.toggle('done', c.checked && li.classList.contains('it')); });
+}
+
+// ===== visão geral =====
+const ROTA_GERAL = [['c_roma'],['c_nap'],['c_flo'],['c_mil'],['c_tir'],['c_chu'],['c_int'],['c_par']];
+const COR_CIDADE = {c_roma:'var(--it)',c_nap:'var(--it)',c_flo:'var(--it)',c_mil:'var(--it)',c_tir:'var(--it)',c_chu:'var(--ch)',c_int:'var(--ch)',c_par:'var(--fr)'};
+function overviewCfg(){
+  const pts = ROTA_GERAL.map(([k], i) => ({key:k, lat:P[k][0], lon:P[k][1], name:P[k][2], type:'c', col:COR_CIDADE[k], n:i+1}));
+  const L = [[0,2,'1h30'],[2,3,'2h'],[3,4,'2h35'],[4,5,'Bernina 4h10'],[5,6,'3h25'],[6,7,'~5h40'],[0,1,'1h15 (bate e volta)']];
+  const hops = L.map(([a,b,lab], i) => ({a, b, mode:'train', lab, dash:i === 6 ? '4 5' : '', km:hav([pts[a].lat, pts[a].lon], [pts[b].lat, pts[b].lon])}));
+  return {pts, hops, label:'Mapa da viagem pela Europa'};
+}
+function renderGeral(){
+  const dias = diffD(TRIP_START, TODAY);
+  const total = BOOKINGS.length, feitos = BOOKINGS.filter(b => DONE['bk:' + b.id]).length;
+  const cfg = overviewCfg();
+  const trecho = cfg.hops.filter((_, i) => i < 6);
+  const kmTot = trecho.reduce((s, h) => s + h.km, 0);
+  const strip = [];
+  const mapa = {'2027-04-02':['roma',0],'2027-04-03':['roma',1],'2027-04-04':['roma',2],'2027-04-05':['napoles',0],'2027-04-06':['roma',3],'2027-04-07':['florenca',1],'2027-04-08':['milao',0],'2027-04-09':['bernina',0],'2027-04-10':['interlaken',0],'2027-04-11':['interlaken',1],'2027-04-12':['interlaken',2]};
+  const tit = {'2027-04-02':'Chegada em Roma','2027-04-03':'Vaticano e Castel Sant’Angelo','2027-04-04':'Trevi, Borghese e centro','2027-04-05':'Bate e volta a Nápoles','2027-04-06':'Coliseu e rumo a Florença','2027-04-07':'Florença completa','2027-04-08':'Milão completa','2027-04-09':'Bernina Express até Interlaken','2027-04-10':'Jungfraujoch e Grindelwald','2027-04-11':'Lauterbrunnen e Mürren','2027-04-12':'De Interlaken a Paris'};
+  const cor = {roma:'var(--it)',napoles:'var(--it)',florenca:'var(--it)',milao:'var(--it)',bernina:'var(--ch)',interlaken:'var(--ch)'};
+  Object.keys(mapa).forEach(d => { const dt = D(d), [c, di] = mapa[d]; strip.push('<button class="sd" style="--cc:' + (d === '2027-04-12' ? 'var(--fr)' : cor[c]) + '" data-go="' + (d === '2027-04-12' ? 'interlaken' : c) + '" data-day="' + di + '"><span class="wd">' + WDL[dt.getUTCDay()] + '</span><b>' + fmtS(dt) + '</b><div class="ti">' + tit[d] + '</div></button>'); });
+  strip.push('<button class="sd" style="--cc:var(--fr)" data-go="paris" data-day="0"><span class="wd">a partir de</span><b>12/04</b><div class="ti">Paris, dias em aberto</div></button>');
+  const prox = bkSorted(BOOKINGS.filter(b => !DONE['bk:' + b.id])).slice(0, 5);
+  const altas = ATENCAO.filter(a => a.sev === 'alta');
+  view.innerHTML =
+   '<section class="hero" style="--cc:var(--accent)"><div class="stripe"></div><div class="hero-in"><div><div class="ctry">Roteiro 02/04 a 12/04 de 2027</div><h2>Itália, Suíça e França</h2><p class="tag">Seu roteiro em um só lugar: clique em cada cidade para ver o dia a dia, os mapas com distâncias, o que reservar e onde dormir.</p></div>' +
+   '<div class="facts"><div class="fact"><b class="num">' + (dias > 0 ? dias : 'Boa viagem') + '</b><span>' + (dias > 0 ? 'dias até o embarque' : '') + '</span></div><div class="fact"><b>10 noites</b><span>até chegar a Paris</span></div><div class="fact"><b>3 países</b><span>7 cidades e vilas</span></div><div class="fact"><b>~' + Math.round(kmTot) + ' km</b><span>em linha reta, entre cidades</span></div></div></div></section>' +
+   '<section><h2 class="sec-t">Os 11 dias</h2><p class="sub-t">Clique em um dia para abrir o itinerário e o mapa dele.</p><div class="strip">' + strip.join('') + '</div></section>' +
+   '<section class="grid g2" style="align-items:start"><div><h2 class="sec-t">Mapa da viagem</h2><p class="sub-t">As distâncias são em linha reta entre as cidades; o tempo é o da sua planilha.</p><div class="mapbox" id="mapgeral"></div></div>' +
+   '<div class="card"><h3>Próximas reservas</h3><p class="sub-t">Cada uma tem data de abertura e link. <b>' + feitos + ' de ' + total + '</b> marcadas como feitas.</p><div class="prog" aria-hidden="true"><div style="width:' + Math.round(feitos/total*100) + '%"></div></div><ul class="cklist" style="margin-top:12px;gap:10px">' +
+   prox.map(({b, i}) => '<li><div class="row" style="gap:8px"><span class="chip ' + (i.cls === 'urgent' ? 'dan' : i.cls === 'open' ? 'ok' : i.cls === 'soon' ? 'warn' : '') + '">' + (i.date ? fmtS(i.date) : esc(i.small)) + '</span><b>' + esc(b.titulo) + '</b></div><div class="small muted">' + esc(i.label) + '</div></li>').join('') +
+   '</ul><div class="row" style="margin-top:12px"><button class="btn solid" data-go="reservas">Ver todas as reservas</button></div></div></section>' +
+   '<section class="card"><h3>Para ficar de olho</h3><div class="grid g2">' + altas.map(a => '<div class="alert high"><h4>' + esc(a.t) + '</h4><p class="small">' + esc(a.txt) + '</p></div>').join('') + '</div><div class="row" style="margin-top:12px"><button class="btn" data-go="atencao">Ver todos os pontos de atenção</button></div></section>' +
+   '<section><h2 class="sec-t">Onde dormir</h2><p class="sub-t">Noites por cidade, com datas de entrada e saída.</p><div class="grid g4">' +
+   ['roma','florenca','milao','interlaken','paris'].map(k => { const s = STAYS[k], c = CITIES[k]; const n = s.out ? diffD(D(s.out), D(s.in)) : null; return '<button class="card sd" style="--cc:' + colorOf(c) + ';text-align:left" data-go="hospedagem"><span class="wd">' + esc(c.nome) + '</span><b>' + (n ? n + (n === 1 ? ' noite' : ' noites') : 'a definir') + '</b><div class="ti">' + fmtS(D(s.in)) + (s.out ? ' → ' + fmtS(D(s.out)) : ' em diante') + '</div></button>'; }).join('') +
+   '</div></section>';
+  MAP = createMap($('#mapgeral'), cfg);
+}
+
+// ===== páginas de cidade =====
+function dayLabel(d){ const dt = D(d.date); return {b:WD[dt.getUTCDay()] + ' ' + fmtS(dt), s:d.tema}; }
+function renderCity(id){
+  const c = CITIES[id], co = COUNTRY[c.pais];
+  const st = S.city[id] = S.city[id] || {day:0, tab:'dicas'};
+  if (st.day >= c.days.length) st.day = 0;
+  const per = c.fim ? (c.inicio === c.fim ? fmt(D(c.inicio)) : fmtS(D(c.inicio)) + ' a ' + fmtS(D(c.fim))) : 'a partir de ' + fmtS(D(c.inicio));
+  const tabs = [['dicas','Dicas'],['stay','Onde ficar'],['res','Reservas'],['comer','Onde comer']];
+  view.innerHTML =
+   '<section class="hero" style="--cc:' + co.cor + '"><div class="stripe"></div><div class="hero-in"><div><div class="ctry">' + co.nome + ' · ' + per + '</div><h2>' + esc(c.nome) + '</h2><p class="tag">' + esc(c.tagline) + '</p>' +
+     '<div class="row" style="margin-top:12px"><span class="chip">' + co.moeda + '</span><span class="chip">' + co.idioma + '</span><span class="chip">' + co.tomada + '</span><span class="chip">' + co.fuso + '</span><span class="chip">Emergência: ' + co.emerg + '</span></div></div>' +
+     '<div class="facts">' + c.facts.map(f => '<div class="fact"><b>' + esc(f[0]) + '</b><span>' + esc(f[1]) + '</span></div>').join('') + '</div></div></section>' +
+   '<div class="daytabs" role="tablist" aria-label="Dias em ' + esc(c.nome) + '">' + c.days.map((d, i) => { const l = dayLabel(d); return '<button role="tab" data-day="' + i + '" aria-selected="' + (i === st.day) + '"><b>' + l.b + '</b><span>' + esc(l.s) + '</span></button>'; }).join('') + '</div>' +
+   '<div id="daybox"></div>' +
+   (id === 'paris' ? '<div id="builder"></div>' : '') +
+   '<section class="card"><div class="inner" role="tablist">' + tabs.map(t => '<button role="tab" data-itab="' + t[0] + '" aria-selected="' + (st.tab === t[0]) + '">' + t[1] + '</button>').join('') + '</div><div id="itabbox"></div></section>';
+  mountDay(c, st.day); mountITab(c, st.tab);
+  if (id === 'paris') mountBuilder();
+}
+function mountDay(c, di){
+  const day = c.days[di], B = buildDay(day), box = $('#daybox'), dt = D(day.date);
+  const zone = c.stay && STAYS[c.stay] && STAYS[c.stay].in <= day.date && (!STAYS[c.stay].out || day.date <= STAYS[c.stay].out) ? {c:STAYS[c.stay].centro, r:STAYS[c.stay].raio} : null;
+  const hasMap = B.pts.length > 0;
+  const items = day.items.map((it, i) => {
+    const pins = B.itemPins[i].map(pi => '<span class="pinb ' + (B.pts[pi].type === 'f' ? 'food' : B.pts[pi].type === 'g' ? 'go' : B.pts[pi].type === 's' ? 'stay' : '') + '">' + (pi+1) + '</span>').join('');
+    const bk = it.bk ? BOOKINGS.find(b => b.id === it.bk) : null;
+    const bi = bk ? bkInfo(bk) : null;
+    return '<li class="it" data-i="' + i + '" id="it-' + i + '"><div class="tm">' + it.t + '<small>' + (it.e ? '→ ' + it.e : '') + '</small></div><div style="min-width:0">' +
+      '<h4>' + (pins ? '<span class="pins">' + pins + '</span>' : '') + esc(it.titulo) + '</h4>' +
+      '<div class="row" style="gap:6px;margin:3px 0"><span class="chip">' + it.du + '</span>' + (bk ? '<button class="chip warn tag-bk" data-bk="' + bk.id + '">Reservar · ' + (bi.date ? 'a partir de ' + fmtS(bi.date) : esc(bi.label)) + '</button>' : '') + '</div>' +
+      (it.d ? '<p>' + esc(it.d) + '</p>' : '') + (it.tip ? '<div class="tipb' + (it.w ? ' w' : '') + '"><b>' + (it.w ? 'Atenção: ' : 'Dica: ') + '</b>' + esc(it.tip) + '</div>' : '') +
+      '</div><label class="ck" title="Marcar como feito"><input type="checkbox" data-ck="it:' + day.id + ':' + i + '" aria-label="Marcar como feito"></label></li>';
+  }).join('');
+  const hopRows = B.hops.map((h, i) => '<tr data-hop="' + i + '"><td class="num">' + (h.a+1) + ' → ' + (h.b+1) + '</td><td>' + esc(B.pts[h.a].name) + ' → ' + esc(B.pts[h.b].name) + '</td><td>' + MODES[h.mode].n + '</td><td class="num">' + km1(h.km) + ' km</td><td class="num">' + fmtMin(h.min) + '</td></tr>').join('');
+  box.innerHTML =
+   '<div class="dayhead"><h3>' + esc(day.titulo) + '</h3><span class="chip acc">' + WDL[dt.getUTCDay()] + ', ' + fmt(dt) + '</span><span class="muted">' + esc(day.tema) + '</span></div>' +
+   (day.alerta ? '<div class="alert high" style="margin-bottom:12px"><h4>Atenção ao horário</h4><p>' + esc(day.alerta) + '</p></div>' : '') +
+   '<div class="daygrid"><ol class="tl" style="list-style:none;padding:0;margin:0">' + items + '</ol>' +
+   (hasMap ? '<div class="sticky"><div class="mapbox" id="mapday"></div><div class="mapbox" style="margin-top:12px"><div class="mapstats"><div><b class="num">' + B.pts.length + '</b><span>paradas</span></div><div><b class="num">' + km1(B.total) + ' km</b><span>linha reta, no total</span></div><div><b class="num">' + km1(B.walkKm) + ' km</b><span>a pé (estimado)</span></div><div><b class="num">' + fmtMin(B.walkMin) + '</b><span>só andando</span></div></div>' +
+   '<div class="row" style="padding:0 12px 12px"><a class="btn solid" target="_blank" rel="noopener" href="' + gmapsDir(B.pts, B.hops.some(h => h.mode !== 'walk' && h.km > 1.5) ? 'transit' : 'walking') + '">Abrir rota no Google Maps</a></div>' +
+   (B.hops.length ? '<div class="scroll-x"><table class="legs"><thead><tr><th>Trecho</th><th>De → para</th><th>Como</th><th>Dist.</th><th>Tempo</th></tr></thead><tbody>' + hopRows + '</tbody></table></div>' : '') + '</div></div>' : '<div class="card"><p class="muted">Este dia é de deslocamento entre cidades; veja os trajetos na aba Trens e trajetos.</p></div>') +
+   '</div>';
+  if (hasMap){
+    $('#mapday').style.setProperty('--cc', colorOf(c));
+    MAP = createMap($('#mapday'), {pts:B.pts, hops:B.hops, zone, label:'Mapa do dia ' + fmtS(dt), onPin:(pi) => selectItem(B.pts[pi].item, true, B), onHop:(hi) => { $$('.legs tr', box).forEach(r => r.classList.toggle('on', +r.dataset.hop === hi)); }});
+    box._B = B;
+  }
+}
+function selectItem(i, scroll, B){
+  $$('.it', view).forEach(el => el.classList.toggle('sel', +el.dataset.i === i));
+  const el = $('#it-' + i, view);
+  if (el && scroll) el.scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+function mountITab(c, tab){
+  const box = $('#itabbox');
+  if (tab === 'dicas'){
+    box.innerHTML = c.dicas.map(t => '<div class="tip"><span class="chip acc">' + esc(t[0]) + '</span><p>' + esc(t[1]) + '</p></div>').join('');
+  } else if (tab === 'comer'){
+    box.innerHTML = '<p class="sub-t">Sugestões conhecidas. Confirme horários e reserve quando precisar.</p>' + c.comer.map(t => '<div class="tip"><span class="chip warn">' + esc(t[0]) + '</span><p>' + esc(t[1]) + '</p></div>').join('');
+  } else if (tab === 'res'){
+    const list = bkSorted(BOOKINGS.filter(b => b.cidade === NOMES_CIDADE[c.id] || (c.id === 'roma' && b.cidade === 'Roma')));
+    box.innerHTML = list.length ? '<div class="grid" style="gap:12px">' + list.map(({b, i}) => bkCard(b, i)).join('') + '</div>' : '<p class="muted">Nenhuma reserva específica para esta cidade.</p>';
+  } else if (tab === 'stay'){
+    mountStay(c, box);
+  }
+  syncChecks();
+}
+function mountStay(c, box){
+  if (!c.stay){ box.innerHTML = '<p>Você não dorme nesta parada. ' + (c.id === 'napoles' ? 'A base é Roma (veja a aba Roma, Onde ficar).' : 'As noites são em Milão e Interlaken.') + '</p>'; return; }
+  const s = STAYS[c.stay], n = s.out ? diffD(D(s.out), D(s.in)) : null;
+  // todas as paradas de visita da cidade (sem repetição)
+  const seen = {}, pts = [];
+  c.days.forEach(d => d.items.forEach(it => (it.p || []).forEach(x => { const k = x.split(':')[0]; const pl = P[k]; if (!pl || seen[k] || pl[3] === 's') return; seen[k] = 1; pts.push({key:k, lat:pl[0], lon:pl[1], name:pl[2], type:pl[3]}); })));
+  const dist = pts.map(p => ({p, km:hav(s.centro, [p.lat, p.lon])})).sort((a, b) => a.km - b.km);
+  box.innerHTML = '<div class="grid g2" style="align-items:start"><div>' +
+    '<h3 style="margin-bottom:4px">' + esc(s.zona) + '</h3><p class="muted" style="margin-bottom:8px">' + (n ? 'Entrada ' + fmtW(D(s.in)) + ' · saída ' + fmtW(D(s.out)) + ' · ' + n + (n === 1 ? ' noite' : ' noites') : 'A partir de ' + fmtW(D(s.in))) + '</p>' +
+    '<h4 style="font-size:18px;margin:10px 0 4px">Por que aqui</h4><ul style="margin:0;padding-left:18px">' + s.por.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' +
+    (s.hoteis.length ? '<h4 style="font-size:18px;margin:12px 0 4px">Pontos de partida para pesquisar</h4><p class="small muted">Exemplos de hotéis na região. Confira preço, avaliações e cancelamento antes de reservar.</p><ul style="margin:4px 0 0;padding-left:18px">' + s.hoteis.map(h => '<li><b>' + esc(h[0]) + '</b> <span class="muted">· ' + esc(h[1]) + ' · ' + esc(h[2]) + '</span></li>').join('') + '</ul>' : '') +
+    '<div class="alert" style="margin-top:12px"><b>Cuidado:</b> ' + esc(s.evitar) + '</div>' +
+    '<h4 style="font-size:18px;margin:14px 0 4px">Distância da zona até os pontos do roteiro</h4><div class="scroll-x"><table class="legs"><thead><tr><th>Ponto</th><th>Linha reta</th><th>A pé (est.)</th></tr></thead><tbody>' + dist.map(d => '<tr><td>' + esc(d.p.name) + '</td><td class="num">' + km1(d.km) + ' km</td><td class="num">' + fmtMin(estMin('walk', d.km)) + '</td></tr>').join('') + '</tbody></table></div></div>' +
+    '<div><div class="mapbox" id="mapstay" style="--cc:' + colorOf(c) + '"></div></div></div>';
+  MAP2 = createMap($('#mapstay'), {pts:pts.map((p, i) => ({...p, n:i+1})), hops:[], zone:{c:s.centro, r:s.raio}, label:'Mapa de hospedagem e pontos do roteiro', showDist:false});
+}
+
+// ===== Paris: construtor de dias =====
+let PAR = store.get('paris', {days:[{ids:[], note:''},{ids:[], note:''},{ids:[], note:''}]});
+let PCAT = 'Todas';
+function parisSave(){ store.set('paris', PAR); }
+function mountBuilder(){
+  const box = $('#builder');
+  const sel = Math.min(S.parisSel, PAR.days.length-1);
+  const cur = PAR.days[sel];
+  const dateOf = i => addD(D('2027-04-13'), i);
+  const cats = ['Todas', ...new Set(PARIS_IDEAS.map(i => i.c))];
+  const pts = cur.ids.map((k, n) => { const pl = P[k]; return {key:k, lat:pl[0], lon:pl[1], name:pl[2], type:'v', n:n+1}; });
+  const far = k => PARIS_IDEAS.find(i => i.k === k).c === 'Bate e volta';
+  const bg = PARIS_IDEAS.filter(i => !cur.ids.includes(i.k)).map(i => ({key:i.k, lat:P[i.k][0], lon:P[i.k][1], name:P[i.k][2], far:far(i.k)}));
+  const hops = []; for (let i = 1; i < pts.length; i++){ const km = hav([pts[i-1].lat, pts[i-1].lon], [pts[i].lat, pts[i].lon]); hops.push({a:i-1, b:i, mode:km > 2 ? 'metro' : 'walk', km}); }
+  const horas = cur.ids.reduce((s, k) => s + PARIS_IDEAS.find(i => i.k === k).h, 0);
+  const dow = dateOf(sel).getUTCDay();
+  const avisos = cur.ids.filter(k => PARIS_IDEAS.find(i => i.k === k).f.includes(dow)).map(k => P[k][2] + ' fecha às ' + WDL[dow] + 's');
+  const km = hops.reduce((s, h) => s + h.km, 0);
+  box.innerHTML = '<section class="card"><h3>Construtor de dias em Paris</h3><p class="sub-t">Escolha os dias livres, adicione lugares e veja a rota e as distâncias no mapa. Os dias e as notas ficam salvos neste navegador.</p>' +
+   '<div class="row" style="margin-bottom:10px">' + PAR.days.map((d, i) => '<button class="btn ghost" data-pday="' + i + '" aria-pressed="' + (i === sel) + '">Dia livre ' + (i+1) + ' · ' + fmtW(dateOf(i)) + '</button>').join('') + '<button class="btn" data-padd>+ dia</button>' + (PAR.days.length > 1 ? '<button class="btn ghost" data-pdel>− último dia</button>' : '') + '</div>' +
+   '<div class="grid g2" style="align-items:start"><div>' +
+   '<h4 style="font-size:20px">Roteiro de ' + fmtW(dateOf(sel)) + ' (' + WDL[dow] + ')</h4>' +
+   (avisos.length ? '<div class="alert high" style="margin:8px 0">' + avisos.map(esc).join('<br>') + '</div>' : '') +
+   (cur.ids.length ? '<ol style="padding-left:20px;margin:8px 0">' + cur.ids.map((k, n) => '<li style="margin:6px 0"><b>' + esc(P[k][2]) + '</b> <span class="muted small">· ' + PARIS_IDEAS.find(i => i.k === k).h + ' h</span> <span class="row" style="display:inline-flex;gap:4px;margin-left:6px"><button class="btn ghost" data-pmove="' + n + ':-1" aria-label="Subir">↑</button><button class="btn ghost" data-pmove="' + n + ':1" aria-label="Descer">↓</button><button class="btn ghost" data-prem="' + k + '">Remover</button></span></li>').join('') + '</ol>' +
+     '<p class="small muted">Tempo estimado de visitas: <b>' + horas.toFixed(1).replace('.', ',') + ' h</b> · deslocamentos em linha reta: <b>' + km1(km) + ' km</b> · <a href="' + gmapsDir(pts, 'transit') + '" target="_blank" rel="noopener">Abrir no Google Maps</a></p>' : '<p class="muted" style="margin:8px 0">Nenhum lugar neste dia ainda. Escolha na lista abaixo ou clique em um ponto cinza no mapa.</p>') +
+   '<label class="small muted" for="pnote">Notas do dia</label><textarea id="pnote" placeholder="Reservas, horários, restaurante..."></textarea></div>' +
+   '<div class="mapbox" id="mappar"></div></div>' +
+   '<h4 style="font-size:20px;margin:16px 0 6px">Banco de ideias</h4><div class="inner">' + cats.map(c => '<button data-pcat="' + c + '" aria-selected="' + (c === PCAT) + '">' + c + '</button>').join('') + '</div>' +
+   PARIS_IDEAS.filter(i => PCAT === 'Todas' || i.c === PCAT).map(i => { const on = cur.ids.includes(i.k); return '<div class="idea"><div><b>' + esc(P[i.k][2]) + '</b> <span class="chip">' + i.c + '</span> <span class="chip">' + i.h + ' h</span>' + (i.f.length ? ' <span class="chip dan">fecha ' + i.f.map(x => WD[x]).join('/') + '</span>' : '') + '<div class="small muted">' + esc(i.r) + '</div></div><button class="btn ' + (on ? 'ghost' : 'solid') + '" data-ptoggle="' + i.k + '">' + (on ? 'Remover' : 'Adicionar') + '</button></div>'; }).join('') +
+   '</section>';
+  $('#pnote').value = cur.note || '';
+  $('#pnote').addEventListener('input', e => { cur.note = e.target.value; parisSave(); });
+  MAP2 = createMap($('#mappar'), {pts, hops, bg, fitBg:true, label:'Mapa do dia livre em Paris', onBg:k => parisToggle(k)});
+}
+function parisToggle(k){ const cur = PAR.days[Math.min(S.parisSel, PAR.days.length-1)]; const i = cur.ids.indexOf(k); if (i >= 0) cur.ids.splice(i, 1); else cur.ids.push(k); parisSave(); mountBuilder(); }
+
+// ===== reservas e prazos =====
+function renderReservas(){
+  const R = S.res;
+  const cidades = [...new Set(BOOKINGS.map(b => b.cidade))], cats = [...new Set(BOOKINGS.map(b => b.cat))];
+  let list = BOOKINGS.filter(b => (!R.cidade || b.cidade === R.cidade) && (!R.cat || b.cat === R.cat) && (!R.pend || !DONE['bk:' + b.id]));
+  if (R.date) list = list.filter(b => { const i = bkInfo(b); return i.date && fmtS(i.date) + i.date.getUTCFullYear() === R.date; });
+  const feitos = BOOKINGS.filter(b => DONE['bk:' + b.id]).length;
+  const sorted = bkSorted(list);
+  let body = '', lastG = '';
+  sorted.forEach(({b, i}) => {
+    let g;
+    if (i.group === 'agora') g = 'Fazer agora e acompanhar';
+    else if (i.group === 'aberto') g = 'Sem data fixa';
+    else g = MESL[i.date.getUTCMonth()] + ' de ' + i.date.getUTCFullYear();
+    if (g !== lastG){ body += '<div class="mon">' + g + '</div>'; lastG = g; }
+    body += bkCard(b, i);
+  });
+  // calendário
+  const ev = {};
+  BOOKINGS.forEach(b => { const i = bkInfo(b); if (i.date){ const k = fmtS(i.date) + i.date.getUTCFullYear(); (ev[k] = ev[k] || []).push(b); } });
+  const months = []; for (let m = 0; m < 7; m++) months.push(new Date(Date.UTC(2026, 9 + m, 1)));
+  const cal = months.map(ms => {
+    const y = ms.getUTCFullYear(), mo = ms.getUTCMonth(), first = ms.getUTCDay(), days = new Date(Date.UTC(y, mo+1, 0)).getUTCDate();
+    let cells = WD.map(w => '<div class="h">' + w[0].toUpperCase() + '</div>').join('') + '<button class="e"></button>'.repeat(first);
+    for (let d = 1; d <= days; d++){
+      const dt = new Date(Date.UTC(y, mo, d)), key = pad2(d) + '/' + pad2(mo+1) + y, n = (ev[key] || []).length;
+      const trip = dt >= TRIP_START && dt <= D('2027-04-12');
+      cells += '<button class="' + (trip ? 'trip ' : '') + (n ? 'ev' + (dt < TODAY ? ' pastd' : '') + ' ' : '') + (R.date === key ? 'sel' : '') + '" data-cal="' + key + '" aria-label="' + d + ' de ' + MESL[mo] + (n ? ', ' + n + ' reservas' : '') + '">' + d + (n ? '<i>' + n + '</i>' : '') + '</button>';
+    }
+    return '<div class="calm card"><h4>' + MESL[mo] + ' ' + y + '</h4><div class="cg">' + cells + '</div></div>';
+  }).join('');
+  view.innerHTML =
+   '<section><h2 class="sec-t">Reservas e prazos</h2><p class="sub-t">Quando cada ingresso, trem e hotel abre para venda. As datas de abertura marcadas como estimativa devem ser confirmadas no site oficial.</p>' +
+   '<div class="card"><div class="row" style="justify-content:space-between"><div><b class="big num">' + feitos + '/' + BOOKINGS.length + '</b> <span class="muted">reservas marcadas como feitas</span></div><div class="row"><button class="btn ghost" data-rv="lista" aria-pressed="' + (R.view === 'lista') + '">Lista</button><button class="btn ghost" data-rv="cal" aria-pressed="' + (R.view === 'cal') + '">Calendário</button></div></div><div class="prog" style="margin-top:10px"><div style="width:' + Math.round(feitos/BOOKINGS.length*100) + '%"></div></div></div></section>' +
+   (R.view === 'cal' ? '<section><p class="sub-t">Em verde, o período da viagem (02 a 12/04). Em laranja, dias de abertura de vendas ou de ação; toque em um dia para filtrar a lista.</p><div class="cal">' + cal + '</div></section>' : '') +
+   '<section><div class="row"><label class="small muted" for="fc">Cidade</label><select id="fc"><option value="">Todas</option>' + cidades.map(c => '<option' + (R.cidade === c ? ' selected' : '') + '>' + c + '</option>').join('') + '</select><label class="small muted" for="ft">Tipo</label><select id="ft"><option value="">Todos</option>' + cats.map(c => '<option' + (R.cat === c ? ' selected' : '') + '>' + c + '</option>').join('') + '</select><label class="btn ghost" style="cursor:pointer"><input type="checkbox" id="fp"' + (R.pend ? ' checked' : '') + '> Só pendentes</label>' + (R.date ? '<button class="btn" data-calclear>Limpar dia ' + R.date.slice(0, 5) + '</button>' : '') + '</div>' +
+   '<div class="grid" style="gap:12px;margin-top:6px">' + (body || '<p class="muted">Nada com esses filtros.</p>') + '</div></section>';
+}
+
+// ===== trens e trajetos =====
+function renderTrens(){
+  const cfg = overviewCfg();
+  const rows = TRENS.map(t => {
+    const a = P[t.de], b = P[t.para], km = hav([a[0], a[1]], [b[0], b[1]]), dt = D(t.d);
+    return '<tr' + (t.alerta ? ' style="background:var(--danger-soft)"' : '') + '><td class="num" style="white-space:nowrap">' + fmtW(dt) + '</td><td><b>' + esc(a[2]) + '</b> → <b>' + esc(b[2]) + '</b></td><td class="num" style="white-space:nowrap">' + t.saida + ' → ' + t.cheg + '</td><td class="num">' + t.dur + '</td><td>' + esc(t.tipo) + '</td><td class="num">' + km1(km) + ' km</td><td>' + esc(t.res) + (t.bk ? ' <button class="chip warn tag-bk" data-bk="' + t.bk + '">ver prazo</button>' : '') + '</td><td>' + esc(t.nota) + '</td></tr>';
+  }).join('');
+  view.innerHTML = '<section><h2 class="sec-t">Trens e trajetos</h2><p class="sub-t">Todos os deslocamentos entre cidades, com horários da sua planilha, distância em linha reta e como comprar.</p></section>' +
+   '<section class="card"><div class="scroll-x"><table class="tbl"><thead><tr><th>Dia</th><th>Trecho</th><th>Horário</th><th>Duração</th><th>Trem</th><th>Linha reta</th><th>Reserva</th><th>Obs.</th></tr></thead><tbody>' + rows + '</tbody></table></div></section>' +
+   '<section class="grid g2" style="align-items:start"><div class="mapbox" id="maptr"></div><div class="card"><h3>Como comprar</h3><div class="tip"><span class="chip acc">Itália</span><p>Trenitalia (Frecciarossa) e Italo vendem em torno de 4 meses antes. As tarifas "Super Economy" e "Low Cost" são limitadas. Regionais não precisam de reserva.</p></div><div class="tip"><span class="chip acc">Suíça</span><p>SBB Mobile é o app oficial, e o Bernina Express exige reserva de assento na RhB. Compare Swiss Travel Pass, Half Fare Card e bilhetes avulsos.</p></div><div class="tip"><span class="chip acc">Paris</span><p>O TGV Lyria exige reserva de assento (SNCF Connect ou SBB). Confirme a estação em Paris.</p></div><div class="tip"><span class="chip warn">Dica</span><p>Compre bilhetes de trem de alta velocidade em nome de cada passageiro e guarde o PDF offline. Greves na Itália são anunciadas com antecedência.</p></div></div></section>';
+  MAP = createMap($('#maptr'), cfg);
+}
+
+// ===== hospedagem =====
+function renderHospedagem(){
+  const keys = ['roma','florenca','milao','interlaken','paris'];
+  const rows = keys.map(k => { const s = STAYS[k], c = CITIES[k], n = s.out ? diffD(D(s.out), D(s.in)) : null; return '<tr><td><b>' + c.nome + '</b></td><td class="num">' + fmtW(D(s.in)) + '</td><td class="num">' + (s.out ? fmtW(D(s.out)) : 'a definir') + '</td><td class="num">' + (n ? n : '–') + '</td><td>' + esc(s.zona) + '</td></tr>'; }).join('');
+  view.innerHTML = '<section><h2 class="sec-t">Onde ficar</h2><p class="sub-t">Cada zona foi pensada para os trens e passeios do seu roteiro. Reserve com cancelamento gratuito e acompanhe os preços.</p></section>' +
+   '<section class="card"><div class="scroll-x"><table class="tbl"><thead><tr><th>Cidade</th><th>Entrada</th><th>Saída</th><th>Noites</th><th>Zona sugerida</th></tr></thead><tbody>' + rows + '</tbody></table></div><p class="small muted" style="margin-top:8px">Total até Paris: 10 noites (4 em Roma, 1 em Florença, 2 em Milão e 3 em Interlaken).</p></section>' +
+   '<section class="grid g2">' + keys.map(k => { const s = STAYS[k], c = CITIES[k]; return '<div class="card" style="border-top:5px solid ' + colorOf(c) + '"><h3>' + c.nome + ' · ' + esc(s.zona) + '</h3><ul style="margin:0 0 8px;padding-left:18px">' + s.por.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' + (s.hoteis.length ? '<p class="small muted">Para pesquisar: ' + s.hoteis.map(h => '<b>' + esc(h[0]) + '</b>').join(', ') + '.</p>' : '') + '<p class="small" style="margin-top:6px"><b>Cuidado:</b> ' + esc(s.evitar) + '</p><div class="row" style="margin-top:10px"><button class="btn" data-go="' + k + '" data-itab="stay">Ver mapa e distâncias</button></div></div>'; }).join('') + '</section>' +
+   '<section class="card"><h3>Dicas para reservar hotel</h3><div class="tip"><span class="chip acc">Cancelamento</span><p>Prefira tarifas com cancelamento gratuito até poucos dias antes. Se o preço cair, cancele e reserve de novo.</p></div><div class="tip"><span class="chip acc">Bagagem</span><p>Pergunte se há elevador e guarda-volumes. Em Roma, Florença e Milão, muitos prédios históricos têm escadas.</p></div><div class="tip"><span class="chip acc">Taxa local</span><p>Itália e Suíça cobram uma taxa de permanência por noite, normalmente paga no hotel e não incluída no valor.</p></div><div class="tip"><span class="chip acc">Chegadas e saídas</span><p>Informe o horário de chegada: em Florença e Milão você chega à noite, e em Roma por volta das 13h.</p></div></section>';
+}
+
+// ===== dicas gerais =====
+function renderDicas(){
+  view.innerHTML = '<section><h2 class="sec-t">Dicas e documentos</h2><p class="sub-t">O que conferir antes de embarcar e o que ajuda no dia a dia.</p></section>' +
+   '<section class="grid g2">' + GERAL.map(g => '<div class="card"><h3>' + g.t + '</h3>' + g.i.map(i => '<div class="tip"><span class="chip acc">' + esc(i[0]) + '</span><p>' + esc(i[1]) + '</p></div>').join('') + '</div>').join('') + '</section>' +
+   '<section class="card"><h3>Frases úteis</h3><div class="scroll-x"><table class="tbl"><thead><tr><th>Português</th><th>Italiano</th><th>Alemão</th><th>Francês</th></tr></thead><tbody>' + FRASES.map(f => '<tr>' + f.map((x, i) => '<td' + (i === 0 ? ' class="muted"' : '') + '>' + esc(x) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div></section>';
+}
+function renderMala(){
+  const total = MALA.reduce((s, g) => s + g.i.length, 0), feitos = MALA.reduce((s, g, gi) => s + g.i.filter((_, ii) => DONE['ml:' + gi + ':' + ii]).length, 0);
+  view.innerHTML = '<section><h2 class="sec-t">Checklist</h2><p class="sub-t"><b>' + feitos + ' de ' + total + '</b> itens marcados. A seleção fica salva neste navegador.</p><div class="prog"><div style="width:' + Math.round(feitos/total*100) + '%"></div></div></section>' +
+   '<section class="grid g3">' + MALA.map((g, gi) => '<div class="card"><h3>' + g.t + '</h3><ul class="cklist">' + g.i.map((x, ii) => '<li class="' + (DONE['ml:' + gi + ':' + ii] ? 'on' : '') + '"><label><input type="checkbox" data-ck="ml:' + gi + ':' + ii + '"><span>' + esc(x) + '</span></label></li>').join('') + '</ul></div>').join('') + '</section>';
+}
+function renderAtencao(){
+  const ord = {alta:0, media:1, baixa:2}, lbl = {alta:'Alta', media:'Média', baixa:'Baixa'};
+  view.innerHTML = '<section><h2 class="sec-t">Pontos de atenção na sua planilha</h2><p class="sub-t">Inconsistências e riscos que encontrei ao cruzar o roteiro com horários e regras de funcionamento. Nada foi alterado no roteiro: são sugestões para você decidir.</p></section>' +
+   '<section class="grid" style="gap:12px">' + [...ATENCAO].sort((a, b) => ord[a.sev] - ord[b.sev]).map(a => '<div class="alert ' + (a.sev === 'alta' ? 'high' : '') + '"><div class="row"><span class="chip ' + (a.sev === 'alta' ? 'dan' : a.sev === 'media' ? 'warn' : '') + '">Prioridade ' + lbl[a.sev] + '</span></div><h4 style="margin-top:6px">' + esc(a.t) + '</h4><p>' + esc(a.txt) + '</p><p style="margin-top:6px"><b>Sugestão:</b> ' + esc(a.sug) + '</p></div>').join('') + '</section>';
+}
+
+// ===== eventos =====
+document.addEventListener('click', e => {
+  const t = e.target;
+  let el;
+  if ((el = t.closest('[data-go]'))){
+    const id = el.dataset.go; const opt = {};
+    if (el.dataset.day != null) opt.day = +el.dataset.day; if (el.dataset.itab) opt.itab = el.dataset.itab;
+    go(id, opt); return;
+  }
+  if ((el = t.closest('[data-day]')) && el.closest('.daytabs')){ const c = CITIES[S.tab]; S.city[S.tab].day = +el.dataset.day; $$('.daytabs button').forEach(b => b.setAttribute('aria-selected', b === el)); mountDay(c, S.city[S.tab].day); syncChecks(); return; }
+  if ((el = t.closest('[data-itab]')) && el.closest('.inner')){ S.city[S.tab].tab = el.dataset.itab; $$('.inner button[data-itab]').forEach(b => b.setAttribute('aria-selected', b === el)); mountITab(CITIES[S.tab], el.dataset.itab); return; }
+  if ((el = t.closest('.tag-bk'))){
+    const id = el.dataset.bk; const b = BOOKINGS.find(x => x.id === id); if (!b) return;
+    const city = Object.keys(NOMES_CIDADE).find(k => NOMES_CIDADE[k] === b.cidade);
+    if (CITIES[S.tab] && city === S.tab){ S.city[S.tab].tab = 'res'; $$('.inner button[data-itab]').forEach(x => x.setAttribute('aria-selected', x.dataset.itab === 'res')); mountITab(CITIES[S.tab], 'res'); const card = $('#bk-' + id); if (card) card.scrollIntoView({block:'center', behavior:'smooth'}); return; }
+    S.res.cidade = ''; S.res.cat = ''; S.res.date = null; go('reservas'); setTimeout(() => { const c = $('#bk-' + id); if (c) c.scrollIntoView({block:'center', behavior:'smooth'}); }, 60); return;
+  }
+  if ((el = t.closest('.it')) && !t.closest('a,button,input,label')){ const i = +el.dataset.i; const box = $('#daybox'); selectItem(i, false); if (MAP && box && box._B){ const pi = box._B.itemPins[i][0]; if (pi != null) MAP.select(pi, true); } return; }
+  if ((el = t.closest('[data-hop]')) && el.tagName === 'TR'){ const i = +el.dataset.hop; $$('.legs tr', view).forEach(r => r.classList.toggle('on', r === el)); MAP && MAP.selectHop(i); return; }
+  if ((el = t.closest('[data-rv]'))){ S.res.view = el.dataset.rv; renderReservas(); syncChecks(); return; }
+  if ((el = t.closest('[data-cal]'))){ S.res.date = S.res.date === el.dataset.cal ? null : el.dataset.cal; renderReservas(); syncChecks(); return; }
+  if ((el = t.closest('[data-calclear]'))){ S.res.date = null; renderReservas(); syncChecks(); return; }
+  if ((el = t.closest('[data-pday]'))){ S.parisSel = +el.dataset.pday; mountBuilder(); return; }
+  if (t.closest('[data-padd]')){ PAR.days.push({ids:[], note:''}); S.parisSel = PAR.days.length-1; parisSave(); mountBuilder(); return; }
+  if (t.closest('[data-pdel]')){ PAR.days.pop(); S.parisSel = Math.min(S.parisSel, PAR.days.length-1); parisSave(); mountBuilder(); return; }
+  if ((el = t.closest('[data-pcat]'))){ PCAT = el.dataset.pcat; mountBuilder(); return; }
+  if ((el = t.closest('[data-ptoggle]'))){ parisToggle(el.dataset.ptoggle); return; }
+  if ((el = t.closest('[data-prem]'))){ parisToggle(el.dataset.prem); return; }
+  if ((el = t.closest('[data-pmove]'))){ const [n, d] = el.dataset.pmove.split(':').map(Number); const ids = PAR.days[S.parisSel].ids; const m = n + d; if (m >= 0 && m < ids.length){ [ids[n], ids[m]] = [ids[m], ids[n]]; parisSave(); mountBuilder(); } return; }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.ck){ setDone(t.dataset.ck, t.checked); if (S.tab === 'reservas') { renderReservas(); syncChecks(); } else if (S.tab === 'mala') { renderMala(); syncChecks(); } else syncChecks(); if (t.dataset.ck.startsWith('bk:') && t.checked) toast('Marcado como feito'); return; }
+  if (t.id === 'fc'){ S.res.cidade = t.value; renderReservas(); syncChecks(); }
+  if (t.id === 'ft'){ S.res.cat = t.value; renderReservas(); syncChecks(); }
+  if (t.id === 'fp'){ S.res.pend = t.checked; renderReservas(); syncChecks(); }
+});
+document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('it')){ e.preventDefault(); e.target.click(); } });
+$('#theme').addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const nx = cur === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', nx); store.set('theme', nx);
+  if (MAP) MAP.redraw(); if (MAP2) MAP2.redraw();
+});
+window.addEventListener('hashchange', () => { const id = location.hash.slice(1); if (id && id !== S.tab && validTab(id)){ S.tab = id; render(); window.scrollTo(0, 0); } });
+function validTab(id){ return GRUPOS.some(g => g.subs.some(s => s[0] === id)); }
+
+// ===== início =====
+(function init(){
+  const th = store.get('theme', null); if (th) document.documentElement.setAttribute('data-theme', th);
+  const dias = diffD(TRIP_START, TODAY);
+  $('#cd').textContent = dias > 0 ? 'Faltam ' + dias + ' dias' : dias >= -10 ? 'Em viagem' : 'Viagem concluída';
+  let id = ''; try { id = location.hash.slice(1); } catch(e){}
+  S.tab = validTab(id) ? id : 'geral';
+  render();
+})();
+</script>
+
+</body></html>
